@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cyr0x console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="bg-glow"></div>
+
+<!-- GATE -->
+<div id="gate" class="gate">
+  <div class="home-tile">
+    <div class="logo-row"><span class="logo">CYR0X</span><span class="logo-dot"></span></div>
+    <p class="tagline">owner console</p>
+    <div class="field">
+      <label for="pw">owner password</label>
+      <input id="pw" type="password" autocomplete="current-password" placeholder="enter password">
+    </div>
+    <button id="unlockBtn" class="btn btn-primary" style="width:100%">Unlock</button>
+    <p id="unlockErr"></p>
+  </div>
+</div>
+
+<!-- CONSOLE: single scrolling page, sections stacked -->
+<main id="console" class="admin hidden">
+  <h1>CYR0X CONSOLE</h1>
+  <p class="sub">timeless scripts owner panel</p>
+
+  <section class="panel">
+    <h2 id="formTitle">Upload a script</h2>
+    <form id="scriptForm">
+      <input id="editIdx" type="hidden" value="">
+      <div class="row2">
+        <div class="field"><label for="sName">script name</label><input id="sName" required maxlength="60" placeholder="e.g. SAB god mode"></div>
+        <div class="field"><label for="sGame">game</label><select id="sGame" required></select></div>
+      </div>
+      <div class="field"><label for="sDesc">short description</label><input id="sDesc" maxlength="200" placeholder="what it does, one line"></div>
+      <div class="field"><label for="sLoad">loadstring</label><textarea id="sLoad" required placeholder="loadstring(game:HttpGet('...'))()"></textarea></div>
+      <button type="submit" id="uploadBtn" class="btn btn-primary">Upload script</button>
+      <button type="button" id="cancelEdit" class="btn btn-sm hidden">Cancel edit</button>
+      <p id="scriptStatus" class="status"></p>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>Manage scripts</h2>
+    <div id="scriptList" class="item-list"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Add a game tab</h2>
+    <div class="row2">
+      <div class="field"><label for="gName">game name</label><input id="gName" maxlength="24" placeholder="e.g. BLOX FRUITS"></div>
+      <div class="field" style="flex:0;align-self:flex-end"><button id="addGameBtn" class="btn btn-primary">Add game</button></div>
+    </div>
+    <p id="gameStatus" class="status"></p>
+    <div id="gameList" class="item-list"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Publish</h2>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Pushes everything above live to the main site instantly.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button id="publishBtn" class="btn btn-primary">Publish live</button>
+      <button id="downloadBtn" class="btn">Download data.js</button>
+    </div>
+    <p id="pubStatus" class="status"></p>
+  </section>
+</main>
+
+<script src="data.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
