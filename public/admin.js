@@ -25,6 +25,7 @@ async function loadData() {
   fillGameSelect();
   renderScripts();
   renderGames();
+  renderTheme();
 }
 
 /* ---------- gate ---------- */
@@ -177,6 +178,149 @@ function renderGames() {
     list.appendChild(row);
   });
 }
+
+
+/* ---------- themes ---------- */
+const DEFAULT_THEME = { name: "Default", accent: "#ff2e7d", accent2: "#ff7a18", glow: "#ff2e7d" };
+const THEME_PRESETS = [
+  { name: "Default",           accent: "#ff2e7d", accent2: "#ff7a18", glow: "#ff2e7d" },
+  { name: "Halloween",         accent: "#ff7a18", accent2: "#8b2fd6", glow: "#ff7a18" },
+  { name: "Christmas",         accent: "#e02430", accent2: "#1f9d55", glow: "#e02430" },
+  { name: "New Year",          accent: "#ffd24a", accent2: "#ff7a18", glow: "#ffd24a" },
+  { name: "New Year's Eve",    accent: "#f5c518", accent2: "#7b2ff7", glow: "#f5c518" },
+  { name: "Valentine's Day",   accent: "#ff4d8d", accent2: "#e0245e", glow: "#ff4d8d" },
+  { name: "St Patrick's Day",  accent: "#1fae55", accent2: "#a8d94a", glow: "#1fae55" },
+  { name: "Easter",            accent: "#ff9ecb", accent2: "#a5d8ff", glow: "#ff9ecb" },
+  { name: "Ramadan & Eid",     accent: "#2bb3a3", accent2: "#f2c14e", glow: "#2bb3a3" },
+  { name: "Diwali",            accent: "#ff8c1a", accent2: "#ffd24a", glow: "#ff8c1a" },
+  { name: "Bonfire Night",     accent: "#ff5a1f", accent2: "#e0245e", glow: "#ff5a1f" },
+  { name: "Day of the Dead",   accent: "#ff2ea6", accent2: "#ff7a18", glow: "#ff2ea6" },
+  { name: "Hanukkah",          accent: "#3b82f6", accent2: "#9fb7d6", glow: "#3b82f6" },
+  { name: "Lunar New Year",    accent: "#e02430", accent2: "#ffd24a", glow: "#e02430" },
+  { name: "Pride",             accent: "#ff6ec7", accent2: "#4dc9ff", glow: "#ff6ec7" },
+  { name: "4th of July",       accent: "#e02430", accent2: "#3b82f6", glow: "#e02430" },
+  { name: "Black Friday",      accent: "#ffb020", accent2: "#4a4a55", glow: "#ffb020" }
+];
+let activePreset = null;
+
+function hexOk(h) { return typeof h === "string" && /^#[0-9a-f]{6}$/i.test(h); }
+function hexRgb(h) { return [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)]; }
+function previewTheme(t) {
+  const a = hexOk(t.accent) ? t.accent : DEFAULT_THEME.accent;
+  const a2 = hexOk(t.accent2) ? t.accent2 : DEFAULT_THEME.accent2;
+  const g = hexOk(t.glow) ? t.glow : DEFAULT_THEME.glow;
+  const s = document.documentElement.style;
+  s.setProperty("--accent", a);
+  s.setProperty("--accent2", a2);
+  s.setProperty("--glow", g);
+  const [r1,g1,b1] = hexRgb(a);
+  s.setProperty("--accent-soft", `rgba(${r1},${g1},${b1},.14)`);
+  s.setProperty("--accent-border", `rgba(${r1},${g1},${b1},.35)`);
+  s.setProperty("--accent-glow", `rgba(${r1},${g1},${b1},.3)`);
+  const [r2,g2,b2] = hexRgb(g);
+  s.setProperty("--glow-1", `rgba(${r2},${g2},${b2},.10)`);
+  s.setProperty("--glow-2", `rgba(${r2},${g2},${b2},.06)`);
+}
+
+function currentTheme() {
+  const t = (DATA.theme && typeof DATA.theme === "object") ? DATA.theme : {};
+  return {
+    name: typeof t.name === "string" && t.name ? t.name : "Default",
+    accent: hexOk(t.accent) ? t.accent : DEFAULT_THEME.accent,
+    accent2: hexOk(t.accent2) ? t.accent2 : DEFAULT_THEME.accent2,
+    glow: hexOk(t.glow) ? t.glow : DEFAULT_THEME.glow
+  };
+}
+
+function renderTheme() {
+  const t = currentTheme();
+  const wrap = $("#themePresets");
+  wrap.innerHTML = "";
+  THEME_PRESETS.forEach((p) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "theme-chip" + (p.name === t.name && p.accent === t.accent && p.accent2 === t.accent2 && p.glow === t.glow ? " active" : "");
+    b.style.setProperty("--c1", p.accent);
+    b.style.setProperty("--c2", p.accent2);
+    b.innerHTML = '<span class="sw"></span>' + esc(p.name);
+    b.onclick = () => {
+      activePreset = p;
+      $("#tAccent").value = p.accent;
+      $("#tAccent2").value = p.accent2;
+      $("#tGlow").value = p.glow;
+      $("#tName").value = p.name;
+      previewTheme(p);
+      renderTheme();
+      status($("#themeStatus"), "preset loaded, hit Save theme live to publish", true);
+    };
+    wrap.appendChild(b);
+  });
+  if (!hexOk(DATA.theme && DATA.theme.accent)) activePreset = null;
+  $("#tAccent").value = t.accent;
+  $("#tAccent2").value = t.accent2;
+  $("#tGlow").value = t.glow;
+  $("#tName").value = t.name;
+  previewTheme(t);
+}
+
+["tAccent", "tAccent2", "tGlow"].forEach((id) => {
+  $("#" + id).addEventListener("input", () => {
+    activePreset = null;
+    previewTheme({ accent: $("#tAccent").value, accent2: $("#tAccent2").value, glow: $("#tGlow").value });
+    renderTheme();
+  });
+});
+
+$("#themeSaveBtn").onclick = async () => {
+  const t = {
+    name: ($("#tName").value || "").trim().slice(0, 24) || "Custom",
+    accent: $("#tAccent").value.toLowerCase(),
+    accent2: $("#tAccent2").value.toLowerCase(),
+    glow: $("#tGlow").value.toLowerCase()
+  };
+  DATA.theme = t;
+  previewTheme(t);
+  const btn = $("#themeSaveBtn");
+  btn.disabled = true;
+  btn.textContent = "Saving...";
+  try {
+    const r = await fetch("/api/data", {
+      method: "PUT",
+      headers: { "content-type": "application/json", "x-admin-password": PW },
+      body: JSON.stringify(DATA)
+    });
+    if (r.ok) status($("#themeStatus"), "theme saved live ✓", true);
+    else if (r.status === 401) status($("#themeStatus"), "wrong password", false);
+    else status($("#themeStatus"), "save failed (status " + r.status + ")", false);
+  } catch (e) {
+    status($("#themeStatus"), "save failed, backend not reachable", false);
+  }
+  btn.disabled = false;
+  btn.textContent = "Save theme live";
+};
+
+$("#themeDefaultBtn").onclick = async () => {
+  activePreset = THEME_PRESETS[0];
+  DATA.theme = Object.assign({}, DEFAULT_THEME);
+  $("#tAccent").value = DEFAULT_THEME.accent;
+  $("#tAccent2").value = DEFAULT_THEME.accent2;
+  $("#tGlow").value = DEFAULT_THEME.glow;
+  $("#tName").value = DEFAULT_THEME.name;
+  previewTheme(DEFAULT_THEME);
+  renderTheme();
+  try {
+    const r = await fetch("/api/data", {
+      method: "PUT",
+      headers: { "content-type": "application/json", "x-admin-password": PW },
+      body: JSON.stringify(DATA)
+    });
+    if (r.ok) status($("#themeStatus"), "reset to default and saved live ✓", true);
+    else if (r.status === 401) status($("#themeStatus"), "wrong password", false);
+    else status($("#themeStatus"), "reset failed (status " + r.status + ")", false);
+  } catch (e) {
+    status($("#themeStatus"), "reset failed, backend not reachable", false);
+  }
+};
 
 /* ---------- publish ---------- */
 $("#publishBtn").onclick = async () => {

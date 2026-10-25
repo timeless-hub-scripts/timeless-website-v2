@@ -23,6 +23,18 @@ export default {
         let body;
         try { body = await request.json(); } catch (e) { return json({ error: "bad json" }, 400); }
         if (!body || !Array.isArray(body.tabs) || !Array.isArray(body.scripts)) return json({ error: "bad payload" }, 400);
+        if (body.theme !== undefined && body.theme !== null) {
+          const t = body.theme;
+          if (typeof t !== "object" || Array.isArray(t)) return json({ error: "bad payload" }, 400);
+          const clean = {};
+          for (const k of ["name", "accent", "accent2", "glow"]) {
+            if (t[k] === undefined || t[k] === null) continue;
+            if (typeof t[k] !== "string" || t[k].length > 40) return json({ error: "bad payload" }, 400);
+            if (k !== "name" && !/^#[0-9a-fA-F]{6}$/.test(t[k])) return json({ error: "bad payload" }, 400);
+            clean[k] = k === "name" ? t[k].slice(0, 40) : t[k].toLowerCase();
+          }
+          body.theme = clean;
+        }
         if (!env.DATA) return json({ error: "kv not configured" }, 500);
         await env.DATA.put("site-data", JSON.stringify(body));
         return json({ ok: true });

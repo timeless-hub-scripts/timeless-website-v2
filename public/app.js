@@ -2,6 +2,31 @@ const $ = (s) => document.querySelector(s);
 let DATA = window.TIMELESS_DATA || { tabs: [], scripts: [] };
 let activeTab = "ALL";
 
+/* ---------- theme ---------- */
+const DEFAULT_THEME = { name: "Default", accent: "#ff2e7d", accent2: "#ff7a18", glow: "#ff2e7d" };
+function hexOk(h) { return typeof h === "string" && /^#[0-9a-f]{6}$/i.test(h); }
+function hexRgb(h) { return [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)]; }
+function applyTheme(t) {
+  t = (t && typeof t === "object" && !Array.isArray(t)) ? t : {};
+  const a  = hexOk(t.accent)  ? t.accent  : DEFAULT_THEME.accent;
+  const a2 = hexOk(t.accent2) ? t.accent2 : DEFAULT_THEME.accent2;
+  const g  = hexOk(t.glow)    ? t.glow    : DEFAULT_THEME.glow;
+  const s = document.documentElement.style;
+  s.setProperty("--accent", a);
+  s.setProperty("--accent2", a2);
+  s.setProperty("--glow", g);
+  const [r1,g1,b1] = hexRgb(a);
+  s.setProperty("--accent-soft",  `rgba(${r1},${g1},${b1},.14)`);
+  s.setProperty("--accent-border",`rgba(${r1},${g1},${b1},.35)`);
+  s.setProperty("--accent-glow",  `rgba(${r1},${g1},${b1},.3)`);
+  const [r2,g2,b2] = hexRgb(g);
+  s.setProperty("--glow-1", `rgba(${r2},${g2},${b2},.10)`);
+  s.setProperty("--glow-2", `rgba(${r2},${g2},${b2},.06)`);
+}
+applyTheme(window.TIMELESS_DATA && window.TIMELESS_DATA.theme);
+
+
+
 function esc(x) {
   const d = document.createElement("div");
   d.textContent = x == null ? "" : String(x);
@@ -16,6 +41,7 @@ async function loadData() {
       if (j && Array.isArray(j.tabs)) DATA = j;
     }
   } catch (e) { /* no KV yet, static data.js stays in use */ }
+  applyTheme(DATA.theme);
   renderTabs();
   renderScripts();
 }
