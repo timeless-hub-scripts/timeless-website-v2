@@ -64,12 +64,20 @@ export default {
           const t = body.theme;
           if (typeof t !== "object" || Array.isArray(t)) return json({ error: "bad payload" }, 400);
           const clean = {};
-          for (const k of ["name", "accent", "accent2", "glow", "vfx"]) {
+          for (const k of ["name", "accent", "accent2", "glow"]) {
             if (t[k] === undefined || t[k] === null) continue;
             if (typeof t[k] !== "string" || t[k].length > 40) return json({ error: "bad payload" }, 400);
-            if (k !== "name" && k !== "vfx" && !/^#[0-9a-fA-F]{6}$/.test(t[k])) return json({ error: "bad payload" }, 400);
-            if (k === "vfx" && !/^[a-z0-9_-]{0,20}$/.test(t[k])) return json({ error: "bad payload" }, 400);
+            if (k !== "name" && !/^#[0-9a-fA-F]{6}$/.test(t[k])) return json({ error: "bad payload" }, 400);
             clean[k] = k === "name" ? t[k].slice(0, 40) : t[k].toLowerCase();
+          }
+          if (t.vfx !== undefined && t.vfx !== null) {
+            let v = t.vfx;
+            if (typeof v === "string") v = v ? [v] : [];
+            if (!Array.isArray(v) || v.length > 8) return json({ error: "bad payload" }, 400);
+            for (const x of v) {
+              if (typeof x !== "string" || x.length > 20 || !/^[a-z0-9_-]{1,20}$/.test(x)) return json({ error: "bad payload" }, 400);
+            }
+            clean.vfx = v;
           }
           body.theme = clean;
         }

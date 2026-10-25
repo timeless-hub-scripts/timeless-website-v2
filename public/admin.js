@@ -182,39 +182,182 @@ function renderGames() {
 
 
 /* ---------- themes ---------- */
-const DEFAULT_THEME = { name: "Default", accent: "#ff2e7d", accent2: "#ff7a18", glow: "#ff2e7d", vfx: "none" };
-const THEME_PRESETS = [
-  { name: "Default",           accent: "#ff2e7d", accent2: "#ff7a18", glow: "#ff2e7d", vfx: "none" },
-  { name: "Halloween",         accent: "#ff7a18", accent2: "#8b2fd6", glow: "#ff7a18", vfx: "halloween" },
-  { name: "Christmas",         accent: "#e02430", accent2: "#1f9d55", glow: "#e02430", vfx: "christmas" },
-  { name: "New Year",          accent: "#ffd24a", accent2: "#ff7a18", glow: "#ffd24a", vfx: "newyear" },
-  { name: "New Year's Eve",    accent: "#f5c518", accent2: "#7b2ff7", glow: "#f5c518", vfx: "nye" },
-  { name: "Valentine's Day",   accent: "#ff4d8d", accent2: "#e0245e", glow: "#ff4d8d", vfx: "valentines" },
-  { name: "St Patrick's Day",  accent: "#1fae55", accent2: "#a8d94a", glow: "#1fae55", vfx: "stpatricks" },
-  { name: "Easter",            accent: "#ff9ecb", accent2: "#a5d8ff", glow: "#ff9ecb", vfx: "easter" },
-  { name: "Ramadan & Eid",     accent: "#2bb3a3", accent2: "#f2c14e", glow: "#2bb3a3", vfx: "ramadan" },
-  { name: "Diwali",            accent: "#ff8c1a", accent2: "#ffd24a", glow: "#ff8c1a", vfx: "diwali" },
-  { name: "Bonfire Night",     accent: "#ff5a1f", accent2: "#e0245e", glow: "#ff5a1f", vfx: "bonfire" },
-  { name: "Day of the Dead",   accent: "#ff2ea6", accent2: "#ff7a18", glow: "#ff2ea6", vfx: "dayofdead" },
-  { name: "Hanukkah",          accent: "#3b82f6", accent2: "#9fb7d6", glow: "#3b82f6", vfx: "hanukkah" },
-  { name: "Lunar New Year",    accent: "#e02430", accent2: "#ffd24a", glow: "#e02430", vfx: "lunar" },
-  { name: "Pride",             accent: "#ff6ec7", accent2: "#4dc9ff", glow: "#ff6ec7", vfx: "pride" },
-  { name: "4th of July",       accent: "#e02430", accent2: "#3b82f6", glow: "#e02430", vfx: "july4" },
-  { name: "Black Friday",      accent: "#ffb020", accent2: "#4a4a55", glow: "#ffb020", vfx: "blackfriday" }
-];
-const VFX_LABELS = {
-  none: "No effects", halloween: "Bats & pumpkins", christmas: "Snowfall",
-  newyear: "Gold sparkle", nye: "Fireworks", valentines: "Floating hearts",
-  stpatricks: "Clovers", easter: "Spring eggs", ramadan: "Crescent & stars",
-  diwali: "Diya glow", bonfire: "Sparks", dayofdead: "Marigolds",
-  hanukkah: "Festival lights", lunar: "Lanterns", pride: "Rainbow hearts",
-  july4: "Fireworks", blackfriday: "Falling deals"
+const DEFAULT_THEME = { name: "Default", accent: "#ff2e7d", accent2: "#ff7a18", glow: "#ff2e7d", vfx: [] };
+const PRESET_FX = {
+  "Default": ["def-sparkles","def-stars","def-confetti"],
+  "Halloween": ["hal-bats","hal-pumpkins","hal-ghosts"],
+  "Christmas": ["xmas-snow","xmas-gifts","xmas-snowmen"],
+  "New Year": ["ny-confetti","ny-sparkles","ny-balloons"],
+  "New Year's Eve": ["nye-fireworks","nye-champagne","nye-confetti"],
+  "Valentine's Day": ["val-hearts","val-roses","val-cupids"],
+  "St Patrick's Day": ["pat-clovers","pat-coins","pat-rainbows"],
+  "Easter": ["eas-eggs","eas-chicks","eas-tulips"],
+  "Ramadan & Eid": ["ram-moons","ram-stars","ram-lanterns"],
+  "Diwali": ["diw-diyas","diw-fireworks","diw-flowers"],
+  "Bonfire Night": ["bon-flames","bon-rockets","bon-sparks"],
+  "Day of the Dead": ["dod-skulls","dod-marigolds","dod-candles"],
+  "Hanukkah": ["han-menorahs","han-candles","han-stars"],
+  "Lunar New Year": ["lun-lanterns","lun-packets","lun-dragons"],
+  "Pride": ["pri-flags","pri-hearts","pri-confetti"],
+  "4th of July": ["jul-flags","jul-fireworks","jul-stars"],
+  "Black Friday": ["bf-bags","bf-tags","bf-money"]
 };
+const THEME_PRESETS = Object.keys(PRESET_FX).map((name) => ({
+  name,
+  accent: { "Default":"#ff2e7d", "Halloween":"#ff7a18", "Christmas":"#e02430", "New Year":"#ffd24a",
+            "New Year's Eve":"#f5c518", "Valentine's Day":"#ff4d8d", "St Patrick's Day":"#1fae55",
+            "Easter":"#ff9ecb", "Ramadan & Eid":"#2bb3a3", "Diwali":"#ff8c1a", "Bonfire Night":"#ff5a1f",
+            "Day of the Dead":"#ff2ea6", "Hanukkah":"#3b82f6", "Lunar New Year":"#e02430", "Pride":"#ff6ec7",
+            "4th of July":"#e02430", "Black Friday":"#ffb020" }[name],
+  accent2: { "Default":"#ff7a18", "Halloween":"#8b2fd6", "Christmas":"#1f9d55", "New Year":"#ff7a18",
+             "New Year's Eve":"#7b2ff7", "Valentine's Day":"#e0245e", "St Patrick's Day":"#a8d94a",
+             "Easter":"#a5d8ff", "Ramadan & Eid":"#f2c14e", "Diwali":"#ffd24a", "Bonfire Night":"#e0245e",
+             "Day of the Dead":"#ff7a18", "Hanukkah":"#9fb7d6", "Lunar New Year":"#ffd24a", "Pride":"#4dc9ff",
+             "4th of July":"#3b82f6", "Black Friday":"#4a4a55" }[name],
+  glow: { "Default":"#ff2e7d", "Halloween":"#ff7a18", "Christmas":"#e02430", "New Year":"#ffd24a",
+          "New Year's Eve":"#f5c518", "Valentine's Day":"#ff4d8d", "St Patrick's Day":"#1fae55",
+          "Easter":"#ff9ecb", "Ramadan & Eid":"#2bb3a3", "Diwali":"#ff8c1a", "Bonfire Night":"#ff5a1f",
+          "Day of the Dead":"#ff2ea6", "Hanukkah":"#3b82f6", "Lunar New Year":"#e02430", "Pride":"#ff6ec7",
+          "4th of July":"#e02430", "Black Friday":"#ffb020" }[name],
+  vfx: PRESET_FX[name]
+}));
+const FX_GROUPS = [
+  { theme: "Default", effects: [
+    { id: "def-sparkles", label: "Sparkles", emojis: ["✨","✧","✨","⭐"] },
+    { id: "def-stars",    label: "Falling stars", emojis: ["⭐","🌟","✩","⭐"] },
+    { id: "def-confetti", label: "Confetti", emojis: ["🎊","🎉","🎊","✨"] } ] },
+  { theme: "Halloween", effects: [
+    { id: "hal-bats",     label: "Bats", emojis: ["🦇","🦇","🦇","🎃"] },
+    { id: "hal-pumpkins", label: "Pumpkins", emojis: ["🎃","🎃","👻","🎃"] },
+    { id: "hal-ghosts",   label: "Ghosts", emojis: ["👻","🕸️","👻","🕷️"] } ] },
+  { theme: "Christmas", effects: [
+    { id: "xmas-snow",    label: "Snowfall", emojis: ["❄️","🌨️","❄️","✨"] },
+    { id: "xmas-gifts",   label: "Gift boxes", emojis: ["🎁","🎁","❄️","🎁"] },
+    { id: "xmas-snowmen", label: "Snowmen", emojis: ["⛄","⛄","❄️","⛄"] } ] },
+  { theme: "New Year", effects: [
+    { id: "ny-confetti",  label: "Confetti", emojis: ["🎉","🎊","🎉","✨"] },
+    { id: "ny-sparkles",  label: "Gold sparkle", emojis: ["✨","🌟","✨","⭐"] },
+    { id: "ny-balloons",  label: "Balloons", emojis: ["🎈","🎈","🎉","🎈"] } ] },
+  { theme: "New Year's Eve", effects: [
+    { id: "nye-fireworks", label: "Fireworks", emojis: ["🎆","🎇","🎆","✨"] },
+    { id: "nye-champagne", label: "Champagne", emojis: ["🥂","🍾","🥂","✨"] },
+    { id: "nye-confetti",  label: "Confetti", emojis: ["🎊","🎉","🎊","✨"] } ] },
+  { theme: "Valentine's Day", effects: [
+    { id: "val-hearts",   label: "Floating hearts", emojis: ["💗","💖","💗","💘"] },
+    { id: "val-roses",    label: "Roses", emojis: ["🌹","🌹","💗","🌹"] },
+    { id: "val-cupids",   label: "Cupid arrows", emojis: ["💘","💝","💘","💗"] } ] },
+  { theme: "St Patrick's Day", effects: [
+    { id: "pat-clovers",  label: "Clovers", emojis: ["🍀","☘️","🍀","🍀"] },
+    { id: "pat-coins",    label: "Gold coins", emojis: ["🪙","🪙","🍀","🪙"] },
+    { id: "pat-rainbows", label: "Rainbows", emojis: ["🌈","🌈","🍀","🌈"] } ] },
+  { theme: "Easter", effects: [
+    { id: "eas-eggs",     label: "Spring eggs", emojis: ["🥚","🥚","🐣","🥚"] },
+    { id: "eas-chicks",   label: "Chicks", emojis: ["🐣","🐣","🥚","🐣"] },
+    { id: "eas-tulips",   label: "Tulips", emojis: ["🌷","🌷","🐣","🌷"] } ] },
+  { theme: "Ramadan & Eid", effects: [
+    { id: "ram-moons",    label: "Crescent moons", emojis: ["🌙","🌙","✨","🌙"] },
+    { id: "ram-stars",    label: "Stars", emojis: ["✨","⭐","✨","🌙"] },
+    { id: "ram-lanterns", label: "Lanterns", emojis: ["🏮","🏮","🌙","🏮"] } ] },
+  { theme: "Diwali", effects: [
+    { id: "diw-diyas",    label: "Diya lamps", emojis: ["🪔","🪔","✨","🪔"] },
+    { id: "diw-fireworks", label: "Fireworks", emojis: ["🎆","🎇","🎆","✨"] },
+    { id: "diw-flowers",  label: "Lotus blooms", emojis: ["🌺","🪷","🌺","✨"] } ] },
+  { theme: "Bonfire Night", effects: [
+    { id: "bon-flames",   label: "Flames", emojis: ["🔥","🔥","💥","🔥"] },
+    { id: "bon-rockets",  label: "Rockets", emojis: ["🎇","🎆","🎇","🔥"] },
+    { id: "bon-sparks",   label: "Sparks", emojis: ["💥","✨","💥","🔥"] } ] },
+  { theme: "Day of the Dead", effects: [
+    { id: "dod-skulls",   label: "Sugar skulls", emojis: ["💀","💀","🌼","💀"] },
+    { id: "dod-marigolds", label: "Marigolds", emojis: ["🌼","🌼","💀","🌼"] },
+    { id: "dod-candles",  label: "Candles", emojis: ["🕯️","🕯️","🌼","🕯️"] } ] },
+  { theme: "Hanukkah", effects: [
+    { id: "han-menorahs", label: "Menorahs", emojis: ["🕎","🕎","✨","🕎"] },
+    { id: "han-candles",  label: "Candles", emojis: ["🕯️","🕯️","🕎","🕯️"] },
+    { id: "han-stars",    label: "Stars of David", emojis: ["✡️","✡️","✨","✡️"] } ] },
+  { theme: "Lunar New Year", effects: [
+    { id: "lun-lanterns", label: "Lanterns", emojis: ["🏮","🏮","🧧","🏮"] },
+    { id: "lun-packets",  label: "Red packets", emojis: ["🧧","🧧","🏮","🧧"] },
+    { id: "lun-dragons",  label: "Dragons", emojis: ["🐉","🐉","🏮","🐉"] } ] },
+  { theme: "Pride", effects: [
+    { id: "pri-flags",    label: "Rainbow flags", emojis: ["🏳️‍🌈","🏳️‍🌈","💖","🏳️‍🌈"] },
+    { id: "pri-hearts",   label: "Hearts", emojis: ["💖","💗","💖","🏳️‍🌈"] },
+    { id: "pri-confetti", label: "Confetti", emojis: ["🎊","🎉","🎊","💖"] } ] },
+  { theme: "4th of July", effects: [
+    { id: "jul-flags",    label: "Flags", emojis: ["🇺🇸","🇺🇸","🎆","🇺🇸"] },
+    { id: "jul-fireworks", label: "Fireworks", emojis: ["🎆","🎇","🎆","⭐"] },
+    { id: "jul-stars",    label: "Stars", emojis: ["⭐","🌟","⭐","🇺🇸"] } ] },
+  { theme: "Black Friday", effects: [
+    { id: "bf-bags",      label: "Shopping bags", emojis: ["🛍️","🛍️","🏷️","🛍️"] },
+    { id: "bf-tags",      label: "Deal tags", emojis: ["🏷️","🏷️","🛍️","🏷️"] },
+    { id: "bf-money",     label: "Falling money", emojis: ["💸","💸","🛒","💸"] } ] }
+];
+const FX_BY_ID = {};
+FX_GROUPS.forEach((g) => g.effects.forEach((e) => { FX_BY_ID[e.id] = e; }));
+const FX_LEGACY = {
+  none: [], halloween: PRESET_FX["Halloween"], christmas: PRESET_FX["Christmas"],
+  newyear: PRESET_FX["New Year"], nye: PRESET_FX["New Year's Eve"], valentines: PRESET_FX["Valentine's Day"],
+  stpatricks: PRESET_FX["St Patrick's Day"], easter: PRESET_FX["Easter"], ramadan: PRESET_FX["Ramadan & Eid"],
+  diwali: PRESET_FX["Diwali"], bonfire: PRESET_FX["Bonfire Night"], dayofdead: PRESET_FX["Day of the Dead"],
+  hanukkah: PRESET_FX["Hanukkah"], lunar: PRESET_FX["Lunar New Year"], pride: PRESET_FX["Pride"],
+  july4: PRESET_FX["4th of July"], blackfriday: PRESET_FX["Black Friday"]
+};
+function fxList(v) {
+  if (typeof v === "string") v = FX_LEGACY[v] || [];
+  if (!Array.isArray(v)) return [];
+  return v.filter((id) => FX_BY_ID[id]);
+}
+function previewVfx(list) {
+  document.querySelectorAll(".vfx-layer").forEach((e) => e.remove());
+  if (previewVfx.timer) { clearInterval(previewVfx.timer); previewVfx.timer = null; }
+  const sets = fxList(list).map((id) => FX_BY_ID[id].emojis);
+  if (!sets.length) return;
+  const layer = document.createElement("div");
+  layer.className = "vfx-layer";
+  layer.setAttribute("aria-hidden", "true");
+  document.body.appendChild(layer);
+  const spawn = () => {
+    if (layer.childElementCount > 34) layer.firstElementChild.remove();
+    const set = sets[Math.floor(Math.random() * sets.length)];
+    const s = document.createElement("span");
+    s.className = "vfx-item";
+    s.textContent = set[Math.floor(Math.random() * set.length)];
+    s.style.left = (Math.random() * 96 + 2) + "%";
+    s.style.fontSize = (14 + Math.random() * 20) + "px";
+    s.style.animationDuration = (9 + Math.random() * 10).toFixed(1) + "s";
+    s.style.animationDelay = (-Math.random() * 10).toFixed(1) + "s";
+    s.style.opacity = (0.3 + Math.random() * 0.45).toFixed(2);
+    layer.appendChild(s);
+  };
+  for (let i = 0; i < 16; i++) spawn();
+  previewVfx.timer = setInterval(spawn, 1200);
+}
+function renderVfxBox() {
+  const box = $("#tVfxBox");
+  box.innerHTML = "";
+  FX_GROUPS.forEach((g) => {
+    const grp = document.createElement("div");
+    grp.className = "fx-group";
+    grp.innerHTML = "<h4>" + esc(g.theme) + "</h4>";
+    const row = document.createElement("div");
+    row.className = "fx-row";
+    g.effects.forEach((e) => {
+      const l = document.createElement("label");
+      l.className = "fx-chk";
+      l.innerHTML = '<input type="checkbox" value="' + e.id + '"> ' + esc(e.label);
+      row.appendChild(l);
+    });
+    grp.appendChild(row);
+    box.appendChild(grp);
+  });
+}
+function vfxFromBox() {
+  return Array.prototype.slice.call($("#tVfxBox").querySelectorAll("input:checked")).map((c) => c.value);
+}
+
 let staged = null;
 
 function hexOk(h) { return typeof h === "string" && /^#[0-9a-f]{6}$/i.test(h); }
 function hexRgb(h) { return [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)]; }
-function vfxOk(v) { return typeof v === "string" && Object.prototype.hasOwnProperty.call(VFX_LABELS, v) ? v : "none"; }
 function previewTheme(t) {
   const a = hexOk(t.accent) ? t.accent : DEFAULT_THEME.accent;
   const a2 = hexOk(t.accent2) ? t.accent2 : DEFAULT_THEME.accent2;
@@ -239,7 +382,7 @@ function currentTheme() {
     accent: hexOk(t.accent) ? t.accent : DEFAULT_THEME.accent,
     accent2: hexOk(t.accent2) ? t.accent2 : DEFAULT_THEME.accent2,
     glow: hexOk(t.glow) ? t.glow : DEFAULT_THEME.glow,
-    vfx: vfxOk(t.vfx)
+    vfx: fxList(t.vfx)
   };
 }
 
@@ -250,15 +393,16 @@ function renderTheme() {
   THEME_PRESETS.forEach((p) => {
     const b = document.createElement("button");
     b.type = "button";
-    const isActive = p.name === staged.name && p.accent === staged.accent && p.accent2 === staged.accent2 && p.glow === staged.glow && p.vfx === staged.vfx;
+    const isActive = p.name === staged.name && p.accent === staged.accent && p.accent2 === staged.accent2 && p.glow === staged.glow && (p.vfx || []).join(",") === (staged.vfx || []).join(",");
     b.className = "theme-chip" + (isActive ? " active" : "");
     b.style.setProperty("--c1", p.accent);
     b.style.setProperty("--c2", p.accent2);
     b.innerHTML = '<span class="sw"></span>' + esc(p.name);
     b.onclick = () => {
-      staged = Object.assign({}, p);
+      staged = Object.assign({}, p, { vfx: (p.vfx || []).slice() });
       syncThemeInputs();
       previewTheme(staged);
+      previewVfx(staged.vfx);
       renderTheme();
       status($("#themeStatus"), "preset loaded, hit Save theme live to publish", true);
     };
@@ -273,7 +417,7 @@ function syncThemeInputs() {
   $("#tAccent2").value = staged.accent2;
   $("#tGlow").value = staged.glow;
   $("#tName").value = staged.name;
-  $("#tVfx").value = staged.vfx;
+  $("#tVfxBox").querySelectorAll("input[type=checkbox]").forEach((c) => { c.checked = (staged.vfx || []).includes(c.value); });
 }
 
 ["tAccent", "tAccent2", "tGlow"].forEach((id) => {
@@ -285,8 +429,9 @@ function syncThemeInputs() {
     renderTheme();
   });
 });
-$("#tVfx").addEventListener("change", () => {
-  staged.vfx = $("#tVfx").value;
+$("#tVfxBox").addEventListener("change", () => {
+  staged.vfx = vfxFromBox();
+  previewVfx(staged.vfx);
   renderTheme();
 });
 
@@ -317,7 +462,7 @@ $("#themeSaveBtn").onclick = () => {
     accent: $("#tAccent").value.toLowerCase(),
     accent2: $("#tAccent2").value.toLowerCase(),
     glow: $("#tGlow").value.toLowerCase(),
-    vfx: vfxOk($("#tVfx").value)
+    vfx: fxList(staged.vfx)
   };
   DATA.theme = staged;
   previewTheme(staged);

@@ -3,37 +3,116 @@ let DATA = window.TIMELESS_DATA || { tabs: [], scripts: [] };
 let activeTab = "ALL";
 
 
-/* ---------- holiday vfx ---------- */
-const VFX_SETS = {
-  halloween: ["🦇","🎃","🕸️","🦇","🎃"],
-  christmas: ["❄️","🎄","⭐","❄️"],
-  newyear: ["✨","🥂","⭐","✨"],
-  nye: ["🎉","🎆","✨","🎉"],
-  valentines: ["💗","💝","💌","💗"],
-  stpatricks: ["🍀","☘️","🍀"],
-  easter: ["🐣","🥚","🌷","🐣"],
-  ramadan: ["🌙","✨","🕌","🌙"],
-  diwali: ["🪔","✨","🎆","🪔"],
-  bonfire: ["🔥","✨","💥","🔥"],
-  dayofdead: ["💀","🌼","🕯️","💀"],
-  hanukkah: ["🕎","✨","⭐","🕎"],
-  lunar: ["🏮","🧧","✨","🏮"],
-  pride: ["🌈","💖","✨","🌈"],
-  july4: ["🎆","⭐","🇺🇸","🎆"],
-  blackfriday: ["🏷️","🛒","💸","🏷️"]
+/* ---------- holiday vfx (3 effects per theme, multi-select) ---------- */
+const FX_GROUPS = [
+  { theme: "Default", effects: [
+    { id: "def-sparkles", label: "Sparkles", emojis: ["✨","✧","✨","⭐"] },
+    { id: "def-stars",    label: "Falling stars", emojis: ["⭐","🌟","✩","⭐"] },
+    { id: "def-confetti", label: "Confetti", emojis: ["🎊","🎉","🎊","✨"] } ] },
+  { theme: "Halloween", effects: [
+    { id: "hal-bats",     label: "Bats", emojis: ["🦇","🦇","🦇","🎃"] },
+    { id: "hal-pumpkins", label: "Pumpkins", emojis: ["🎃","🎃","👻","🎃"] },
+    { id: "hal-ghosts",   label: "Ghosts", emojis: ["👻","🕸️","👻","🕷️"] } ] },
+  { theme: "Christmas", effects: [
+    { id: "xmas-snow",    label: "Snowfall", emojis: ["❄️","🌨️","❄️","✨"] },
+    { id: "xmas-gifts",   label: "Gift boxes", emojis: ["🎁","🎁","❄️","🎁"] },
+    { id: "xmas-snowmen", label: "Snowmen", emojis: ["⛄","⛄","❄️","⛄"] } ] },
+  { theme: "New Year", effects: [
+    { id: "ny-confetti",  label: "Confetti", emojis: ["🎉","🎊","🎉","✨"] },
+    { id: "ny-sparkles",  label: "Gold sparkle", emojis: ["✨","🌟","✨","⭐"] },
+    { id: "ny-balloons",  label: "Balloons", emojis: ["🎈","🎈","🎉","🎈"] } ] },
+  { theme: "New Year's Eve", effects: [
+    { id: "nye-fireworks", label: "Fireworks", emojis: ["🎆","🎇","🎆","✨"] },
+    { id: "nye-champagne", label: "Champagne", emojis: ["🥂","🍾","🥂","✨"] },
+    { id: "nye-confetti",  label: "Confetti", emojis: ["🎊","🎉","🎊","✨"] } ] },
+  { theme: "Valentine's Day", effects: [
+    { id: "val-hearts",   label: "Floating hearts", emojis: ["💗","💖","💗","💘"] },
+    { id: "val-roses",    label: "Roses", emojis: ["🌹","🌹","💗","🌹"] },
+    { id: "val-cupids",   label: "Cupid arrows", emojis: ["💘","💝","💘","💗"] } ] },
+  { theme: "St Patrick's Day", effects: [
+    { id: "pat-clovers",  label: "Clovers", emojis: ["🍀","☘️","🍀","🍀"] },
+    { id: "pat-coins",    label: "Gold coins", emojis: ["🪙","🪙","🍀","🪙"] },
+    { id: "pat-rainbows", label: "Rainbows", emojis: ["🌈","🌈","🍀","🌈"] } ] },
+  { theme: "Easter", effects: [
+    { id: "eas-eggs",     label: "Spring eggs", emojis: ["🥚","🥚","🐣","🥚"] },
+    { id: "eas-chicks",   label: "Chicks", emojis: ["🐣","🐣","🥚","🐣"] },
+    { id: "eas-tulips",   label: "Tulips", emojis: ["🌷","🌷","🐣","🌷"] } ] },
+  { theme: "Ramadan & Eid", effects: [
+    { id: "ram-moons",    label: "Crescent moons", emojis: ["🌙","🌙","✨","🌙"] },
+    { id: "ram-stars",    label: "Stars", emojis: ["✨","⭐","✨","🌙"] },
+    { id: "ram-lanterns", label: "Lanterns", emojis: ["🏮","🏮","🌙","🏮"] } ] },
+  { theme: "Diwali", effects: [
+    { id: "diw-diyas",    label: "Diya lamps", emojis: ["🪔","🪔","✨","🪔"] },
+    { id: "diw-fireworks", label: "Fireworks", emojis: ["🎆","🎇","🎆","✨"] },
+    { id: "diw-flowers",  label: "Lotus blooms", emojis: ["🌺","🪷","🌺","✨"] } ] },
+  { theme: "Bonfire Night", effects: [
+    { id: "bon-flames",   label: "Flames", emojis: ["🔥","🔥","💥","🔥"] },
+    { id: "bon-rockets",  label: "Rockets", emojis: ["🎇","🎆","🎇","🔥"] },
+    { id: "bon-sparks",   label: "Sparks", emojis: ["💥","✨","💥","🔥"] } ] },
+  { theme: "Day of the Dead", effects: [
+    { id: "dod-skulls",   label: "Sugar skulls", emojis: ["💀","💀","🌼","💀"] },
+    { id: "dod-marigolds", label: "Marigolds", emojis: ["🌼","🌼","💀","🌼"] },
+    { id: "dod-candles",  label: "Candles", emojis: ["🕯️","🕯️","🌼","🕯️"] } ] },
+  { theme: "Hanukkah", effects: [
+    { id: "han-menorahs", label: "Menorahs", emojis: ["🕎","🕎","✨","🕎"] },
+    { id: "han-candles",  label: "Candles", emojis: ["🕯️","🕯️","🕎","🕯️"] },
+    { id: "han-stars",    label: "Stars of David", emojis: ["✡️","✡️","✨","✡️"] } ] },
+  { theme: "Lunar New Year", effects: [
+    { id: "lun-lanterns", label: "Lanterns", emojis: ["🏮","🏮","🧧","🏮"] },
+    { id: "lun-packets",  label: "Red packets", emojis: ["🧧","🧧","🏮","🧧"] },
+    { id: "lun-dragons",  label: "Dragons", emojis: ["🐉","🐉","🏮","🐉"] } ] },
+  { theme: "Pride", effects: [
+    { id: "pri-flags",    label: "Rainbow flags", emojis: ["🏳️‍🌈","🏳️‍🌈","💖","🏳️‍🌈"] },
+    { id: "pri-hearts",   label: "Hearts", emojis: ["💖","💗","💖","🏳️‍🌈"] },
+    { id: "pri-confetti", label: "Confetti", emojis: ["🎊","🎉","🎊","💖"] } ] },
+  { theme: "4th of July", effects: [
+    { id: "jul-flags",    label: "Flags", emojis: ["🇺🇸","🇺🇸","🎆","🇺🇸"] },
+    { id: "jul-fireworks", label: "Fireworks", emojis: ["🎆","🎇","🎆","⭐"] },
+    { id: "jul-stars",    label: "Stars", emojis: ["⭐","🌟","⭐","🇺🇸"] } ] },
+  { theme: "Black Friday", effects: [
+    { id: "bf-bags",      label: "Shopping bags", emojis: ["🛍️","🛍️","🏷️","🛍️"] },
+    { id: "bf-tags",      label: "Deal tags", emojis: ["🏷️","🏷️","🛍️","🏷️"] },
+    { id: "bf-money",     label: "Falling money", emojis: ["💸","💸","🛒","💸"] } ] }
+];
+const FX_BY_ID = {};
+FX_GROUPS.forEach((g) => g.effects.forEach((e) => { FX_BY_ID[e.id] = e; }));
+const FX_LEGACY = {
+  none: [],
+  halloween: ["hal-bats","hal-pumpkins","hal-ghosts"],
+  christmas: ["xmas-snow","xmas-gifts","xmas-snowmen"],
+  newyear: ["ny-confetti","ny-sparkles","ny-balloons"],
+  nye: ["nye-fireworks","nye-champagne","nye-confetti"],
+  valentines: ["val-hearts","val-roses","val-cupids"],
+  stpatricks: ["pat-clovers","pat-coins","pat-rainbows"],
+  easter: ["eas-eggs","eas-chicks","eas-tulips"],
+  ramadan: ["ram-moons","ram-stars","ram-lanterns"],
+  diwali: ["diw-diyas","diw-fireworks","diw-flowers"],
+  bonfire: ["bon-flames","bon-rockets","bon-sparks"],
+  dayofdead: ["dod-skulls","dod-marigolds","dod-candles"],
+  hanukkah: ["han-menorahs","han-candles","han-stars"],
+  lunar: ["lun-lanterns","lun-packets","lun-dragons"],
+  pride: ["pri-flags","pri-hearts","pri-confetti"],
+  july4: ["jul-flags","jul-fireworks","jul-stars"],
+  blackfriday: ["bf-bags","bf-tags","bf-money"]
 };
+function fxList(v) {
+  if (typeof v === "string") v = FX_LEGACY[v] || [];
+  if (!Array.isArray(v)) return [];
+  return v.filter((id) => FX_BY_ID[id]);
+}
 let vfxTimer = null;
-function applyVfx(kind) {
+function applyVfx(list) {
   document.querySelectorAll(".vfx-layer").forEach((e) => e.remove());
   if (vfxTimer) { clearInterval(vfxTimer); vfxTimer = null; }
-  const set = VFX_SETS[kind];
-  if (!set) return;
+  const sets = fxList(list).map((id) => FX_BY_ID[id].emojis);
+  if (!sets.length) return;
   const layer = document.createElement("div");
   layer.className = "vfx-layer";
   layer.setAttribute("aria-hidden", "true");
   document.body.appendChild(layer);
   const spawn = () => {
-    if (layer.childElementCount > 30) layer.firstElementChild.remove();
+    if (layer.childElementCount > 34) layer.firstElementChild.remove();
+    const set = sets[Math.floor(Math.random() * sets.length)];
     const s = document.createElement("span");
     s.className = "vfx-item";
     s.textContent = set[Math.floor(Math.random() * set.length)];
@@ -44,17 +123,17 @@ function applyVfx(kind) {
     s.style.opacity = (0.3 + Math.random() * 0.45).toFixed(2);
     layer.appendChild(s);
   };
-  for (let i = 0; i < 14; i++) spawn();
-  vfxTimer = setInterval(spawn, 1300);
+  for (let i = 0; i < 16; i++) spawn();
+  vfxTimer = setInterval(spawn, 1200);
 }
 
 /* ---------- theme ---------- */
-const DEFAULT_THEME = { name: "Default", accent: "#ff2e7d", accent2: "#ff7a18", glow: "#ff2e7d", vfx: "none" };
+const DEFAULT_THEME = { name: "Default", accent: "#ff2e7d", accent2: "#ff7a18", glow: "#ff2e7d", vfx: [] };
 function hexOk(h) { return typeof h === "string" && /^#[0-9a-f]{6}$/i.test(h); }
 function hexRgb(h) { return [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)]; }
 function applyTheme(t) {
   t = (t && typeof t === "object" && !Array.isArray(t)) ? t : {};
-  applyVfx(typeof t.vfx === "string" && VFX_SETS[t.vfx] ? t.vfx : "none");
+  applyVfx(t.vfx);
   const a  = hexOk(t.accent)  ? t.accent  : DEFAULT_THEME.accent;
   const a2 = hexOk(t.accent2) ? t.accent2 : DEFAULT_THEME.accent2;
   const g  = hexOk(t.glow)    ? t.glow    : DEFAULT_THEME.glow;

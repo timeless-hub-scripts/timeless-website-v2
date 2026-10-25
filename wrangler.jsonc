@@ -2,6 +2,7 @@
   "name": "timeless-website",
   "compatibility_date": "2026-10-01",
   "main": "worker.js",
+  "workers_dev": true,
   "assets": {
     "directory": "public",
     "html_handling": "auto-trailing-slash",
