@@ -31,3 +31,17 @@ The hub is structured so a Discord OAuth login can drop in without reworking
 it: data stays in KV, and the console gate (`x-admin-password` header) is
 independent of site visitors. A stub comment marks the header slot in
 `index.html` where the login button will mount.
+
+## Using npx wrangler
+
+`wrangler.jsonc` is the Pages config for this site: project name
+`timeless-website-v2`, no build step, output dir is the repo root.
+
+- Local dev: `npx wrangler pages dev . --kv DATA --var ADMIN_PASSWORD:yourpassword`
+  The `--kv` flag gives the functions a local-only KV store bound as `DATA`,
+  so `/cyr0x` publishing works locally without touching production.
+- Deploy: `npx wrangler pages deploy .`
+  If your Pages project on the dashboard has a different name, either pass
+  `--project-name <name>` or change `name` in `wrangler.jsonc`.
+- `ADMIN_PASSWORD` stays a dashboard secret for production. For local dev pass
+  it with `--var` like above. Never commit it.
