@@ -45,3 +45,23 @@ independent of site visitors. A stub comment marks the header slot in
   `--project-name <name>` or change `name` in `wrangler.jsonc`.
 - `ADMIN_PASSWORD` stays a dashboard secret for production. For local dev pass
   it with `--var` like above. Never commit it.
+
+## Structure (Workers + static assets)
+
+Cloudflare deploys this repo as a Worker with static assets, so the deploy
+command in the dashboard is `npx wrangler deploy`:
+
+- `public/` — the site: index.html, styles.css, data.js, app.js, cyr0x.html,
+  admin.js, assets/banner.png.
+- `worker.js` — serves `/api/data` (GET public, PUT password-gated) and
+  `/api/verify`. Non-asset requests land here.
+- `wrangler.jsonc` — name `timeless-website`, no build step.
+
+## Bindings
+
+- `ADMIN_PASSWORD` — add it as a secret in the dashboard (Variables and
+  Secrets). Enable "Keep vars" there so dashboard secrets survive deploys.
+- `DATA` (KV) — create a KV namespace, then send the namespace id and it gets
+  added to `wrangler.jsonc` as binding `DATA`. Until then the site runs on the
+  seed data in `public/data.js` and `/cyr0x` publishing returns "kv not
+  configured".

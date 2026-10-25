@@ -1,5 +1,10 @@
 {
-  "name": "timeless-website-v2",
+  "name": "timeless-website",
   "compatibility_date": "2026-10-01",
-  "pages_build_output_dir": "."
+  "main": "worker.js",
+  "assets": {
+    "directory": "public",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  }
 }
