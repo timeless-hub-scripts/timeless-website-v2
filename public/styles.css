@@ -244,3 +244,10 @@ body{
   .vfx-item{animation:none}
   .vfx-layer{display:none}
 }
+
+/* account chip (discord login) */
+.account{position:absolute;top:18px;right:22px;display:flex;align-items:center;gap:10px;z-index:5}
+.account img.acc-ava{width:34px;height:34px;border-radius:50%;object-fit:cover;box-shadow:0 0 10px var(--glow)}
+.account span.acc-name{font-size:13px;font-weight:700;color:#fff}
+.account a.acc-login,.account button.acc-logout{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:7px 14px;cursor:pointer;text-decoration:none}
+.account button.acc-logout{background:none;color:var(--accent2);-webkit-text-fill-color:var(--accent2);border:1px solid rgba(255,255,255,.12)}

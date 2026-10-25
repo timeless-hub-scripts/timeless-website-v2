@@ -12,5 +12,11 @@
       "binding": "DATA",
       "id": "5a3f76187ca24434b5868628c0cce3b1"
     }
+  ],
+  "routes": [
+    {
+      "pattern": "scripts.timelesscheats.lol",
+      "custom_domain": true
+    }
   ]
 }
