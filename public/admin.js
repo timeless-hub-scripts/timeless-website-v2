@@ -26,6 +26,7 @@ async function loadData() {
   renderScripts();
   renderGames();
   staged = currentTheme();
+  renderVfxBox();
   renderTheme();
 }
 
