@@ -6,5 +6,11 @@
     "directory": "public",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "none"
-  }
+  },
+  "kv_namespaces": [
+    {
+      "binding": "DATA",
+      "id": "5a3f76187ca24434b5868628c0cce3b1"
+    }
+  ]
 }
