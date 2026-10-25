@@ -222,7 +222,13 @@ const THEME_PRESETS = Object.keys(PRESET_FX).map((name) => ({
           "4th of July":"#e02430", "Black Friday":"#ffb020" }[name],
   vfx: PRESET_FX[name]
 }));
+const THEME_BADGE = { Default:"✨", Halloween:"🎃", Christmas:"🎄", "New Year":"🎉", "New Year's Eve":"🥂", "Valentine's Day":"💗", "St Patrick's Day":"🍀", Easter:"🐣", "Ramadan & Eid":"🌙", Diwali:"🪔", "Bonfire Night":"🔥", "Day of the Dead":"💀", Hanukkah:"🕎", "Lunar New Year":"🏮", Pride:"🏳️‍🌈", "4th of July":"🇺🇸", "Black Friday":"🛍️" };
 const FX_GROUPS = [
+  { theme: "Decorations", effects: [
+    { id: "deco-borders",  label: "Button borders", deco: "borders" },
+    { id: "deco-outlines", label: "Tile outlines", deco: "outlines" },
+    { id: "deco-icons",    label: "Icons on buttons", deco: "icons" },
+    { id: "deco-banner",   label: "Banner strip", deco: "banner" } ] },
   { theme: "Default", effects: [
     { id: "def-sparkles", label: "Sparkles", emojis: ["✨","✧","✨","⭐"] },
     { id: "def-stars",    label: "Falling stars", emojis: ["⭐","🌟","✩","⭐"] },
@@ -310,7 +316,11 @@ function fxList(v) {
 function previewVfx(list) {
   document.querySelectorAll(".vfx-layer").forEach((e) => e.remove());
   if (previewVfx.timer) { clearInterval(previewVfx.timer); previewVfx.timer = null; }
-  const sets = fxList(list).map((id) => FX_BY_ID[id].emojis);
+  const ids = fxList(list);
+  const decos = ids.filter((id) => FX_BY_ID[id].deco);
+  document.body.classList.remove("fx-borders", "fx-outlines", "fx-icons", "fx-banner");
+  decos.forEach((id) => document.body.classList.add("fx-" + FX_BY_ID[id].deco));
+  const sets = ids.filter((id) => FX_BY_ID[id].emojis).map((id) => FX_BY_ID[id].emojis);
   if (!sets.length) return;
   const layer = document.createElement("div");
   layer.className = "vfx-layer";
@@ -374,6 +384,7 @@ function previewTheme(t) {
   const [r2,g2,b2] = hexRgb(g);
   s.setProperty("--glow-1", `rgba(${r2},${g2},${b2},.10)`);
   s.setProperty("--glow-2", `rgba(${r2},${g2},${b2},.06)`);
+  s.setProperty("--fx-badge", THEME_BADGE[t.name] || "✨");
 }
 
 function currentTheme() {
@@ -400,7 +411,8 @@ function renderTheme() {
     b.style.setProperty("--c2", p.accent2);
     b.innerHTML = '<span class="sw"></span>' + esc(p.name);
     b.onclick = () => {
-      staged = Object.assign({}, p, { vfx: (p.vfx || []).slice() });
+      const keepDecos = (staged.vfx || []).filter((id) => FX_BY_ID[id] && FX_BY_ID[id].deco);
+      staged = Object.assign({}, p, { vfx: (p.vfx || []).concat(keepDecos) });
       syncThemeInputs();
       previewTheme(staged);
       previewVfx(staged.vfx);

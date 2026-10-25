@@ -4,7 +4,13 @@ let activeTab = "ALL";
 
 
 /* ---------- holiday vfx (3 effects per theme, multi-select) ---------- */
+const THEME_BADGE = { Default:"✨", Halloween:"🎃", Christmas:"🎄", "New Year":"🎉", "New Year's Eve":"🥂", "Valentine's Day":"💗", "St Patrick's Day":"🍀", Easter:"🐣", "Ramadan & Eid":"🌙", Diwali:"🪔", "Bonfire Night":"🔥", "Day of the Dead":"💀", Hanukkah:"🕎", "Lunar New Year":"🏮", Pride:"🏳️‍🌈", "4th of July":"🇺🇸", "Black Friday":"🛍️" };
 const FX_GROUPS = [
+  { theme: "Decorations", effects: [
+    { id: "deco-borders",  label: "Button borders", deco: "borders" },
+    { id: "deco-outlines", label: "Tile outlines", deco: "outlines" },
+    { id: "deco-icons",    label: "Icons on buttons", deco: "icons" },
+    { id: "deco-banner",   label: "Banner strip", deco: "banner" } ] },
   { theme: "Default", effects: [
     { id: "def-sparkles", label: "Sparkles", emojis: ["✨","✧","✨","⭐"] },
     { id: "def-stars",    label: "Falling stars", emojis: ["⭐","🌟","✩","⭐"] },
@@ -104,7 +110,11 @@ let vfxTimer = null;
 function applyVfx(list) {
   document.querySelectorAll(".vfx-layer").forEach((e) => e.remove());
   if (vfxTimer) { clearInterval(vfxTimer); vfxTimer = null; }
-  const sets = fxList(list).map((id) => FX_BY_ID[id].emojis);
+  const ids = fxList(list);
+  const decos = ids.filter((id) => FX_BY_ID[id].deco);
+  document.body.classList.remove("fx-borders", "fx-outlines", "fx-icons", "fx-banner");
+  decos.forEach((id) => document.body.classList.add("fx-" + FX_BY_ID[id].deco));
+  const sets = ids.filter((id) => FX_BY_ID[id].emojis).map((id) => FX_BY_ID[id].emojis);
   if (!sets.length) return;
   const layer = document.createElement("div");
   layer.className = "vfx-layer";
@@ -138,6 +148,7 @@ function applyTheme(t) {
   const a2 = hexOk(t.accent2) ? t.accent2 : DEFAULT_THEME.accent2;
   const g  = hexOk(t.glow)    ? t.glow    : DEFAULT_THEME.glow;
   const s = document.documentElement.style;
+  s.setProperty("--fx-badge", THEME_BADGE[t.name] || "✨");
   s.setProperty("--accent", a);
   s.setProperty("--accent2", a2);
   s.setProperty("--glow", g);
