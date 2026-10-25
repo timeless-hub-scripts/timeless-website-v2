@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
 <div id="bg-glow"></div>
@@ -71,6 +71,7 @@
       <div class="field"><label for="tAccent2">Gradient end</label><input id="tAccent2" type="color" value="#ff7a18"></div>
       <div class="field"><label for="tGlow">Background glow</label><input id="tGlow" type="color" value="#ff2e7d"></div>
       <div class="field"><label for="tName">Theme name</label><input id="tName" maxlength="24" placeholder="e.g. Halloween"></div>
+      <div class="field"><label for="tVfx">Effects</label><select id="tVfx"></select></div>
     </div>
     <div style="display:flex;gap:12px;flex-wrap:wrap">
       <button id="themeSaveBtn" class="btn btn-primary">Save theme live</button>
@@ -90,7 +91,7 @@
   </section>
 </main>
 
-<script src="data.js"></script>
-<script src="admin.js"></script>
+<script src="data.js?v=3"></script>
+<script src="admin.js?v=3"></script>
 </body>
 </html>

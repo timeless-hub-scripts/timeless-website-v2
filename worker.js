@@ -27,10 +27,11 @@ export default {
           const t = body.theme;
           if (typeof t !== "object" || Array.isArray(t)) return json({ error: "bad payload" }, 400);
           const clean = {};
-          for (const k of ["name", "accent", "accent2", "glow"]) {
+          for (const k of ["name", "accent", "accent2", "glow", "vfx"]) {
             if (t[k] === undefined || t[k] === null) continue;
             if (typeof t[k] !== "string" || t[k].length > 40) return json({ error: "bad payload" }, 400);
-            if (k !== "name" && !/^#[0-9a-fA-F]{6}$/.test(t[k])) return json({ error: "bad payload" }, 400);
+            if (k !== "name" && k !== "vfx" && !/^#[0-9a-fA-F]{6}$/.test(t[k])) return json({ error: "bad payload" }, 400);
+            if (k === "vfx" && !/^[a-z0-9_-]{0,20}$/.test(t[k])) return json({ error: "bad payload" }, 400);
             clean[k] = k === "name" ? t[k].slice(0, 40) : t[k].toLowerCase();
           }
           body.theme = clean;

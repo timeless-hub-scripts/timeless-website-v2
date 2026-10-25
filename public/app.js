@@ -2,12 +2,59 @@ const $ = (s) => document.querySelector(s);
 let DATA = window.TIMELESS_DATA || { tabs: [], scripts: [] };
 let activeTab = "ALL";
 
+
+/* ---------- holiday vfx ---------- */
+const VFX_SETS = {
+  halloween: ["🦇","🎃","🕸️","🦇","🎃"],
+  christmas: ["❄️","🎄","⭐","❄️"],
+  newyear: ["✨","🥂","⭐","✨"],
+  nye: ["🎉","🎆","✨","🎉"],
+  valentines: ["💗","💝","💌","💗"],
+  stpatricks: ["🍀","☘️","🍀"],
+  easter: ["🐣","🥚","🌷","🐣"],
+  ramadan: ["🌙","✨","🕌","🌙"],
+  diwali: ["🪔","✨","🎆","🪔"],
+  bonfire: ["🔥","✨","💥","🔥"],
+  dayofdead: ["💀","🌼","🕯️","💀"],
+  hanukkah: ["🕎","✨","⭐","🕎"],
+  lunar: ["🏮","🧧","✨","🏮"],
+  pride: ["🌈","💖","✨","🌈"],
+  july4: ["🎆","⭐","🇺🇸","🎆"],
+  blackfriday: ["🏷️","🛒","💸","🏷️"]
+};
+let vfxTimer = null;
+function applyVfx(kind) {
+  document.querySelectorAll(".vfx-layer").forEach((e) => e.remove());
+  if (vfxTimer) { clearInterval(vfxTimer); vfxTimer = null; }
+  const set = VFX_SETS[kind];
+  if (!set) return;
+  const layer = document.createElement("div");
+  layer.className = "vfx-layer";
+  layer.setAttribute("aria-hidden", "true");
+  document.body.appendChild(layer);
+  const spawn = () => {
+    if (layer.childElementCount > 30) layer.firstElementChild.remove();
+    const s = document.createElement("span");
+    s.className = "vfx-item";
+    s.textContent = set[Math.floor(Math.random() * set.length)];
+    s.style.left = (Math.random() * 96 + 2) + "%";
+    s.style.fontSize = (14 + Math.random() * 20) + "px";
+    s.style.animationDuration = (9 + Math.random() * 10).toFixed(1) + "s";
+    s.style.animationDelay = (-Math.random() * 10).toFixed(1) + "s";
+    s.style.opacity = (0.3 + Math.random() * 0.45).toFixed(2);
+    layer.appendChild(s);
+  };
+  for (let i = 0; i < 14; i++) spawn();
+  vfxTimer = setInterval(spawn, 1300);
+}
+
 /* ---------- theme ---------- */
-const DEFAULT_THEME = { name: "Default", accent: "#ff2e7d", accent2: "#ff7a18", glow: "#ff2e7d" };
+const DEFAULT_THEME = { name: "Default", accent: "#ff2e7d", accent2: "#ff7a18", glow: "#ff2e7d", vfx: "none" };
 function hexOk(h) { return typeof h === "string" && /^#[0-9a-f]{6}$/i.test(h); }
 function hexRgb(h) { return [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)]; }
 function applyTheme(t) {
   t = (t && typeof t === "object" && !Array.isArray(t)) ? t : {};
+  applyVfx(typeof t.vfx === "string" && VFX_SETS[t.vfx] ? t.vfx : "none");
   const a  = hexOk(t.accent)  ? t.accent  : DEFAULT_THEME.accent;
   const a2 = hexOk(t.accent2) ? t.accent2 : DEFAULT_THEME.accent2;
   const g  = hexOk(t.glow)    ? t.glow    : DEFAULT_THEME.glow;

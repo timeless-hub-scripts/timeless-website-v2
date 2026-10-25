@@ -25,6 +25,7 @@ async function loadData() {
   fillGameSelect();
   renderScripts();
   renderGames();
+  staged = currentTheme();
   renderTheme();
 }
 
@@ -181,30 +182,39 @@ function renderGames() {
 
 
 /* ---------- themes ---------- */
-const DEFAULT_THEME = { name: "Default", accent: "#ff2e7d", accent2: "#ff7a18", glow: "#ff2e7d" };
+const DEFAULT_THEME = { name: "Default", accent: "#ff2e7d", accent2: "#ff7a18", glow: "#ff2e7d", vfx: "none" };
 const THEME_PRESETS = [
-  { name: "Default",           accent: "#ff2e7d", accent2: "#ff7a18", glow: "#ff2e7d" },
-  { name: "Halloween",         accent: "#ff7a18", accent2: "#8b2fd6", glow: "#ff7a18" },
-  { name: "Christmas",         accent: "#e02430", accent2: "#1f9d55", glow: "#e02430" },
-  { name: "New Year",          accent: "#ffd24a", accent2: "#ff7a18", glow: "#ffd24a" },
-  { name: "New Year's Eve",    accent: "#f5c518", accent2: "#7b2ff7", glow: "#f5c518" },
-  { name: "Valentine's Day",   accent: "#ff4d8d", accent2: "#e0245e", glow: "#ff4d8d" },
-  { name: "St Patrick's Day",  accent: "#1fae55", accent2: "#a8d94a", glow: "#1fae55" },
-  { name: "Easter",            accent: "#ff9ecb", accent2: "#a5d8ff", glow: "#ff9ecb" },
-  { name: "Ramadan & Eid",     accent: "#2bb3a3", accent2: "#f2c14e", glow: "#2bb3a3" },
-  { name: "Diwali",            accent: "#ff8c1a", accent2: "#ffd24a", glow: "#ff8c1a" },
-  { name: "Bonfire Night",     accent: "#ff5a1f", accent2: "#e0245e", glow: "#ff5a1f" },
-  { name: "Day of the Dead",   accent: "#ff2ea6", accent2: "#ff7a18", glow: "#ff2ea6" },
-  { name: "Hanukkah",          accent: "#3b82f6", accent2: "#9fb7d6", glow: "#3b82f6" },
-  { name: "Lunar New Year",    accent: "#e02430", accent2: "#ffd24a", glow: "#e02430" },
-  { name: "Pride",             accent: "#ff6ec7", accent2: "#4dc9ff", glow: "#ff6ec7" },
-  { name: "4th of July",       accent: "#e02430", accent2: "#3b82f6", glow: "#e02430" },
-  { name: "Black Friday",      accent: "#ffb020", accent2: "#4a4a55", glow: "#ffb020" }
+  { name: "Default",           accent: "#ff2e7d", accent2: "#ff7a18", glow: "#ff2e7d", vfx: "none" },
+  { name: "Halloween",         accent: "#ff7a18", accent2: "#8b2fd6", glow: "#ff7a18", vfx: "halloween" },
+  { name: "Christmas",         accent: "#e02430", accent2: "#1f9d55", glow: "#e02430", vfx: "christmas" },
+  { name: "New Year",          accent: "#ffd24a", accent2: "#ff7a18", glow: "#ffd24a", vfx: "newyear" },
+  { name: "New Year's Eve",    accent: "#f5c518", accent2: "#7b2ff7", glow: "#f5c518", vfx: "nye" },
+  { name: "Valentine's Day",   accent: "#ff4d8d", accent2: "#e0245e", glow: "#ff4d8d", vfx: "valentines" },
+  { name: "St Patrick's Day",  accent: "#1fae55", accent2: "#a8d94a", glow: "#1fae55", vfx: "stpatricks" },
+  { name: "Easter",            accent: "#ff9ecb", accent2: "#a5d8ff", glow: "#ff9ecb", vfx: "easter" },
+  { name: "Ramadan & Eid",     accent: "#2bb3a3", accent2: "#f2c14e", glow: "#2bb3a3", vfx: "ramadan" },
+  { name: "Diwali",            accent: "#ff8c1a", accent2: "#ffd24a", glow: "#ff8c1a", vfx: "diwali" },
+  { name: "Bonfire Night",     accent: "#ff5a1f", accent2: "#e0245e", glow: "#ff5a1f", vfx: "bonfire" },
+  { name: "Day of the Dead",   accent: "#ff2ea6", accent2: "#ff7a18", glow: "#ff2ea6", vfx: "dayofdead" },
+  { name: "Hanukkah",          accent: "#3b82f6", accent2: "#9fb7d6", glow: "#3b82f6", vfx: "hanukkah" },
+  { name: "Lunar New Year",    accent: "#e02430", accent2: "#ffd24a", glow: "#e02430", vfx: "lunar" },
+  { name: "Pride",             accent: "#ff6ec7", accent2: "#4dc9ff", glow: "#ff6ec7", vfx: "pride" },
+  { name: "4th of July",       accent: "#e02430", accent2: "#3b82f6", glow: "#e02430", vfx: "july4" },
+  { name: "Black Friday",      accent: "#ffb020", accent2: "#4a4a55", glow: "#ffb020", vfx: "blackfriday" }
 ];
-let activePreset = null;
+const VFX_LABELS = {
+  none: "No effects", halloween: "Bats & pumpkins", christmas: "Snowfall",
+  newyear: "Gold sparkle", nye: "Fireworks", valentines: "Floating hearts",
+  stpatricks: "Clovers", easter: "Spring eggs", ramadan: "Crescent & stars",
+  diwali: "Diya glow", bonfire: "Sparks", dayofdead: "Marigolds",
+  hanukkah: "Festival lights", lunar: "Lanterns", pride: "Rainbow hearts",
+  july4: "Fireworks", blackfriday: "Falling deals"
+};
+let staged = null;
 
 function hexOk(h) { return typeof h === "string" && /^#[0-9a-f]{6}$/i.test(h); }
 function hexRgb(h) { return [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)]; }
+function vfxOk(v) { return typeof v === "string" && Object.prototype.hasOwnProperty.call(VFX_LABELS, v) ? v : "none"; }
 function previewTheme(t) {
   const a = hexOk(t.accent) ? t.accent : DEFAULT_THEME.accent;
   const a2 = hexOk(t.accent2) ? t.accent2 : DEFAULT_THEME.accent2;
@@ -228,59 +238,60 @@ function currentTheme() {
     name: typeof t.name === "string" && t.name ? t.name : "Default",
     accent: hexOk(t.accent) ? t.accent : DEFAULT_THEME.accent,
     accent2: hexOk(t.accent2) ? t.accent2 : DEFAULT_THEME.accent2,
-    glow: hexOk(t.glow) ? t.glow : DEFAULT_THEME.glow
+    glow: hexOk(t.glow) ? t.glow : DEFAULT_THEME.glow,
+    vfx: vfxOk(t.vfx)
   };
 }
 
 function renderTheme() {
-  const t = currentTheme();
+  if (!staged) staged = currentTheme();
   const wrap = $("#themePresets");
   wrap.innerHTML = "";
   THEME_PRESETS.forEach((p) => {
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "theme-chip" + (p.name === t.name && p.accent === t.accent && p.accent2 === t.accent2 && p.glow === t.glow ? " active" : "");
+    const isActive = p.name === staged.name && p.accent === staged.accent && p.accent2 === staged.accent2 && p.glow === staged.glow && p.vfx === staged.vfx;
+    b.className = "theme-chip" + (isActive ? " active" : "");
     b.style.setProperty("--c1", p.accent);
     b.style.setProperty("--c2", p.accent2);
     b.innerHTML = '<span class="sw"></span>' + esc(p.name);
     b.onclick = () => {
-      activePreset = p;
-      $("#tAccent").value = p.accent;
-      $("#tAccent2").value = p.accent2;
-      $("#tGlow").value = p.glow;
-      $("#tName").value = p.name;
-      previewTheme(p);
+      staged = Object.assign({}, p);
+      syncThemeInputs();
+      previewTheme(staged);
       renderTheme();
       status($("#themeStatus"), "preset loaded, hit Save theme live to publish", true);
     };
     wrap.appendChild(b);
   });
-  if (!hexOk(DATA.theme && DATA.theme.accent)) activePreset = null;
-  $("#tAccent").value = t.accent;
-  $("#tAccent2").value = t.accent2;
-  $("#tGlow").value = t.glow;
-  $("#tName").value = t.name;
-  previewTheme(t);
+  syncThemeInputs();
+  previewTheme(staged);
+}
+
+function syncThemeInputs() {
+  $("#tAccent").value = staged.accent;
+  $("#tAccent2").value = staged.accent2;
+  $("#tGlow").value = staged.glow;
+  $("#tName").value = staged.name;
+  $("#tVfx").value = staged.vfx;
 }
 
 ["tAccent", "tAccent2", "tGlow"].forEach((id) => {
   $("#" + id).addEventListener("input", () => {
-    activePreset = null;
-    previewTheme({ accent: $("#tAccent").value, accent2: $("#tAccent2").value, glow: $("#tGlow").value });
+    staged[id.replace("t", "").toLowerCase()] = $("#" + id).value;
+    staged.name = "Custom";
+    $("#tName").value = "Custom";
+    previewTheme(staged);
     renderTheme();
   });
 });
+$("#tVfx").addEventListener("change", () => {
+  staged.vfx = $("#tVfx").value;
+  renderTheme();
+});
 
-$("#themeSaveBtn").onclick = async () => {
-  const t = {
-    name: ($("#tName").value || "").trim().slice(0, 24) || "Custom",
-    accent: $("#tAccent").value.toLowerCase(),
-    accent2: $("#tAccent2").value.toLowerCase(),
-    glow: $("#tGlow").value.toLowerCase()
-  };
-  DATA.theme = t;
-  previewTheme(t);
-  const btn = $("#themeSaveBtn");
+async function pushData(label, okMsg) {
+  const btn = $(label);
   btn.disabled = true;
   btn.textContent = "Saving...";
   try {
@@ -289,37 +300,35 @@ $("#themeSaveBtn").onclick = async () => {
       headers: { "content-type": "application/json", "x-admin-password": PW },
       body: JSON.stringify(DATA)
     });
-    if (r.ok) status($("#themeStatus"), "theme saved live ✓", true);
+    if (r.ok) status($("#themeStatus"), okMsg, true);
     else if (r.status === 401) status($("#themeStatus"), "wrong password", false);
     else status($("#themeStatus"), "save failed (status " + r.status + ")", false);
   } catch (e) {
     status($("#themeStatus"), "save failed, backend not reachable", false);
   }
   btn.disabled = false;
-  btn.textContent = "Save theme live";
+  btn.textContent = label === "#themeSaveBtn" ? "Save theme live" : "Reset to default";
+}
+
+$("#themeSaveBtn").onclick = () => {
+  staged.name = ($("#tName").value || "").trim().slice(0, 24) || "Custom";
+  staged = {
+    name: staged.name,
+    accent: $("#tAccent").value.toLowerCase(),
+    accent2: $("#tAccent2").value.toLowerCase(),
+    glow: $("#tGlow").value.toLowerCase(),
+    vfx: vfxOk($("#tVfx").value)
+  };
+  DATA.theme = staged;
+  previewTheme(staged);
+  pushData("#themeSaveBtn", "theme saved live ✓");
 };
 
-$("#themeDefaultBtn").onclick = async () => {
-  activePreset = THEME_PRESETS[0];
+$("#themeDefaultBtn").onclick = () => {
+  staged = Object.assign({}, DEFAULT_THEME);
   DATA.theme = Object.assign({}, DEFAULT_THEME);
-  $("#tAccent").value = DEFAULT_THEME.accent;
-  $("#tAccent2").value = DEFAULT_THEME.accent2;
-  $("#tGlow").value = DEFAULT_THEME.glow;
-  $("#tName").value = DEFAULT_THEME.name;
-  previewTheme(DEFAULT_THEME);
   renderTheme();
-  try {
-    const r = await fetch("/api/data", {
-      method: "PUT",
-      headers: { "content-type": "application/json", "x-admin-password": PW },
-      body: JSON.stringify(DATA)
-    });
-    if (r.ok) status($("#themeStatus"), "reset to default and saved live ✓", true);
-    else if (r.status === 401) status($("#themeStatus"), "wrong password", false);
-    else status($("#themeStatus"), "reset failed (status " + r.status + ")", false);
-  } catch (e) {
-    status($("#themeStatus"), "reset failed, backend not reachable", false);
-  }
+  pushData("#themeDefaultBtn", "reset to default and saved live ✓");
 };
 
 /* ---------- publish ---------- */

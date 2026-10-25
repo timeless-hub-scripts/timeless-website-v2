@@ -229,3 +229,18 @@ body{
 .theme-custom{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
 .theme-custom .field{flex:1;min-width:130px;margin-bottom:0}
 .theme-custom input[type=color]{width:100%;height:42px;padding:4px;border-radius:10px;background:#070709;border:1px solid var(--line);cursor:pointer}
+
+/* ---------- holiday vfx ---------- */
+.vfx-layer{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:4}
+.vfx-item{position:absolute;top:-8%;display:inline-block;animation:vfx-drift linear infinite;filter:drop-shadow(0 2px 6px rgba(0,0,0,.45));will-change:transform}
+@keyframes vfx-drift{
+  0%{transform:translateY(-6vh) translateX(0) rotate(-8deg)}
+  25%{transform:translateY(24vh) translateX(2.5vw) rotate(7deg)}
+  50%{transform:translateY(52vh) translateX(-2vw) rotate(-6deg)}
+  75%{transform:translateY(80vh) translateX(2vw) rotate(6deg)}
+  100%{transform:translateY(108vh) translateX(0) rotate(-8deg)}
+}
+@media (prefers-reduced-motion: reduce){
+  .vfx-item{animation:none}
+  .vfx-layer{display:none}
+}
