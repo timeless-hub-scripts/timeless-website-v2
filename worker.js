@@ -55,7 +55,7 @@ const rawText = (body, status = 200) =>
     headers: {
       "content-type": "text/plain; charset=utf-8",
       "access-control-allow-origin": "*",
-      "cache-control": "public, max-age=20",
+      "cache-control": "no-store",
       "x-content-type-options": "nosniff"
     }
   });

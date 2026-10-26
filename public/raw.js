@@ -1,5 +1,7 @@
 const $ = (s) => document.querySelector(s);
 let PW = sessionStorage.getItem("raw_pw") || "";
+let PASTES = [];            // local view, corrected by the server on refresh
+const LOCAL = {};           // name -> { numbers, content } saved this session
 
 function esc(x) {
   const d = document.createElement("div");
@@ -12,17 +14,14 @@ function status(el, msg, ok) {
 }
 const authHeaders = (extra) => Object.assign({ "x-admin-password": PW, cache: "no-store" }, extra || {});
 
-async function loadList() {
-  const r = await fetch("/api/raw/list", { headers: authHeaders() });
-  if (!r.ok) return;
-  const j = await r.json();
+function renderPastes() {
   const box = $("#pasteList");
-  if (!j.pastes || !j.pastes.length) {
+  if (!PASTES.length) {
     box.innerHTML = '<p class="empty">no pastes yet</p>';
     return;
   }
   box.innerHTML = "";
-  j.pastes.forEach((p) => {
+  PASTES.forEach((p) => {
     const base = location.origin + "/" + p.name + ".cheat";
     const row = document.createElement("div");
     row.className = "paste-row";
@@ -43,27 +42,47 @@ async function loadList() {
       try { await navigator.clipboard.writeText(base); } catch (e) {}
     };
     row.querySelector('[data-act="edit"]').onclick = async () => {
-      const g = await fetch("/api/raw/get?name=" + encodeURIComponent(p.name), { headers: authHeaders() });
-      if (!g.ok) { status($("#pasteStatus"), "could not load paste", false); return; }
-      const gj = await g.json();
-      $("#pName").value = gj.name;
-      $("#pNums").value = gj.numbers || "";
-      $("#pContent").value = gj.content;
+      if (LOCAL[p.name]) {
+        $("#pName").value = p.name;
+        $("#pNums").value = LOCAL[p.name].numbers || "";
+        $("#pContent").value = LOCAL[p.name].content;
+      } else {
+        const g = await fetch("/api/raw/get?name=" + encodeURIComponent(p.name), { headers: authHeaders() });
+        if (!g.ok) { status($("#pasteStatus"), "could not load paste", false); return; }
+        const gj = await g.json();
+        $("#pName").value = gj.name;
+        $("#pNums").value = gj.numbers || "";
+        $("#pContent").value = gj.content;
+      }
       window.scrollTo({ top: 0, behavior: "smooth" });
-      status($("#pasteStatus"), "editing " + gj.name, true);
+      status($("#pasteStatus"), "editing " + p.name, true);
       $("#pasteLinks").textContent = "";
     };
     row.querySelector('[data-act="del"]').onclick = async () => {
       if (!confirm("Delete paste " + p.name + "?")) return;
       const d = await fetch("/api/raw/delete", { method: "POST", headers: authHeaders({ "content-type": "application/json" }), body: JSON.stringify({ name: p.name }) });
-      if (d.ok) {
-        if ($("#pName").value === p.name) { $("#pName").value = ""; $("#pNums").value = ""; $("#pContent").value = ""; }
-        loadList();
-      }
+      if (!d.ok) { status($("#pasteStatus"), "delete failed", false); return; }
+      PASTES = PASTES.filter((x) => x.name !== p.name);
+      delete LOCAL[p.name];
+      renderPastes();
     };
     box.appendChild(row);
   });
 }
+
+async function loadList() {
+  const r = await fetch("/api/raw/list", { headers: authHeaders() });
+  if (!r.ok) return;
+  const j = await r.json();
+  // server wins, but keep pastes saved this session the server has not listed yet
+  const server = j.pastes || [];
+  const names = new Set(server.map((p) => p.name));
+  const pending = Object.keys(LOCAL).filter((n) => !names.has(n))
+    .map((n) => ({ name: n, numbers: LOCAL[n].numbers || "", size: LOCAL[n].content.length, updated: 0 }));
+  PASTES = server.concat(pending);
+  renderPastes();
+}
+$("#refreshBtn").onclick = loadList;
 
 /* ---------- gate ---------- */
 async function unlock() {
@@ -100,7 +119,11 @@ $("#pasteForm").addEventListener("submit", async (e) => {
   const base = location.origin + j.url;
   $("#pasteLinks").textContent = base + (j.numberedUrl ? "  |  " + location.origin + j.numberedUrl : "");
   status($("#pasteStatus"), "saved " + name, true);
-  loadList();
+  LOCAL[name] = { numbers, content };
+  const entry = { name, numbers, size: content.length, updated: Date.now() };
+  const i = PASTES.findIndex((p) => p.name === name);
+  if (i >= 0) PASTES[i] = entry; else PASTES.unshift(entry);
+  renderPastes();
 });
 
 $("#clearBtn").onclick = () => {
