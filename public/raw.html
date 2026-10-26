@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>raw pastes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=5">
+</head>
+<body>
+<div id="bg-glow"></div>
+
+<!-- GATE -->
+<div id="gate" class="gate">
+  <div class="home-tile">
+    <div class="logo-row"><span class="logo">RAW</span><span class="logo-dot"></span></div>
+    <p class="tagline">raw paste manager</p>
+    <div class="field">
+      <label for="pw">owner password</label>
+      <input id="pw" type="password" autocomplete="current-password" placeholder="enter password">
+    </div>
+    <button id="unlockBtn" class="btn btn-primary" style="width:100%">Unlock</button>
+    <p id="unlockErr"></p>
+  </div>
+</div>
+
+<!-- CONSOLE -->
+<main id="console" class="admin hidden">
+  <h1>RAW PASTES</h1>
+  <p class="sub">unlimited raw storage</p>
+
+  <section class="panel">
+    <h2>Save a paste</h2>
+    <form id="pasteForm">
+      <div class="row2">
+        <div class="field"><label for="pName">name</label><input id="pName" required maxlength="60" placeholder="my-script"></div>
+        <div class="field"><label for="pNums">numbers (optional)</label><input id="pNums" maxlength="40" placeholder="5 numbers, e.g. 1,2,3,4,5"></div>
+      </div>
+      <div class="field"><label for="pContent">contents (unlimited)</label><textarea id="pContent" rows="14" placeholder="paste or upload anything"></textarea></div>
+      <div class="field"><label for="pFile">upload a file (replaces contents)</label><input id="pFile" type="file"></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button type="submit" id="saveBtn" class="btn btn-primary">Save paste</button>
+        <button type="button" id="clearBtn" class="btn btn-sm">Clear form</button>
+      </div>
+      <p id="pasteStatus" class="status"></p>
+      <p id="pasteLinks" class="paste-links"></p>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>Your pastes</h2>
+    <div id="pasteList" class="item-list"></div>
+  </section>
+</main>
+
+<script src="raw.js?v=1"></script>
+</body>
+</html>

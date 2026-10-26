@@ -267,3 +267,15 @@ body.fx-banner::before{content:"";position:fixed;top:0;left:0;right:0;height:5px
 .account span.acc-name{font-size:13px;font-weight:700;color:#fff}
 .account a.acc-login,.account button.acc-logout{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:7px 14px;cursor:pointer;text-decoration:none}
 .account button.acc-logout{background:none;color:var(--accent2);-webkit-text-fill-color:var(--accent2);border:1px solid rgba(255,255,255,.12)}
+
+/* ---- raw pastes ---- */
+.paste-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;background:rgba(255,255,255,.03)}
+.paste-main{display:flex;flex-direction:column;gap:3px;min-width:0}
+.paste-main strong{font-size:14px;letter-spacing:.02em}
+.paste-meta{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.paste-link{color:var(--accent);font-size:12px;word-break:break-all;text-decoration:none}
+.paste-link:hover{text-decoration:underline}
+.paste-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn.danger{border-color:rgba(255,90,90,.5);color:#ff9a9a}
+.paste-links{color:var(--accent);font-size:12px;word-break:break-all;margin-top:10px}
+.empty{color:var(--muted);font-size:13px;margin:0}
