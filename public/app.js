@@ -274,3 +274,51 @@ $("#banner").addEventListener("error", () => {
   $("#banner").style.display = "none";
   $("#bannerFallback").classList.remove("hidden");
 });
+
+/* ---------- discord login (account chip) ---------- */
+const LOGIN_MSG = {
+  joined: "welcome, you are logged in and in the server",
+  joinfail: "logged in, but could not add you to the server, try again",
+  notready: "discord login is not configured yet",
+  state: "login did not line up, try again",
+  token: "discord rejected the login, try again",
+  user: "could not read your discord profile, try again"
+};
+async function renderAccount() {
+  const box = $("#account");
+  if (!box) return;
+  let me = null;
+  try { me = await (await fetch("/api/me", { cache: "no-store" })).json(); } catch (e) {}
+  if (me && me.user) {
+    const u = me.user;
+    const ava = u.avatar
+      ? "https://cdn.discordapp.com/avatars/" + u.id + "/" + u.avatar + ".png?size=64"
+      : "https://cdn.discordapp.com/embed/avatars/0.png";
+    box.textContent = "";
+    const img = document.createElement("img");
+    img.className = "acc-ava"; img.src = ava; img.alt = "";
+    const nm = document.createElement("span");
+    nm.className = "acc-name"; nm.textContent = u.global_name || u.username;
+    const out = document.createElement("button");
+    out.className = "acc-logout"; out.textContent = "Logout";
+    out.onclick = () => { location.href = "/auth/logout"; };
+    box.append(img, nm, out);
+  } else {
+    box.textContent = "";
+    const a = document.createElement("a");
+    a.className = "acc-login"; a.href = "/auth/login";
+    a.textContent = "Login with Discord";
+    box.append(a);
+  }
+  const p = new URLSearchParams(location.search);
+  const code = p.get("login");
+  if (code && LOGIN_MSG[code]) {
+    history.replaceState(null, "", location.pathname);
+    const note = document.createElement("p");
+    note.className = "login-note";
+    note.textContent = LOGIN_MSG[code];
+    box.insertAdjacentElement("afterend", note);
+    setTimeout(() => note.remove(), 6000);
+  }
+}
+renderAccount();

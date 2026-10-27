@@ -35,7 +35,19 @@ async function readSession(request, secret) {
 function cookie(name, value, maxAge) {
   return `${name}=${value}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Lax`;
 }
-const DISCORD_SCOPES = "identify";
+const DISCORD_SCOPES = "identify guilds guilds.join";
+
+// Login credentials live in KV (discord:config), entered by the owner at /discord-setup.
+async function discordConfig(env) {
+  let cfg = {};
+  try { cfg = JSON.parse((await env.DATA.get("discord:config")) || "{}") || {}; } catch (e) { cfg = {}; }
+  return {
+    clientId: String(cfg.clientId || DISCORD_CLIENT_ID).trim(),
+    clientSecret: String(cfg.clientSecret || env.DISCORD_CLIENT_SECRET || "").trim(),
+    botToken: String(cfg.botToken || env.DISCORD_BOT_TOKEN || "").trim(),
+    guildId: String(cfg.guildId || "").trim()
+  };
+}
 
 
 // Serves /api/data and /api/verify. Static files in public/ are served first
@@ -196,13 +208,43 @@ export default {
       return json({ ok: true });
     }
 
+    // ---- Discord OAuth config (owner-only) ----
+    const DISC_ID_RE = /^\d{15,25}$/;
+    if (pathname === "/api/discord/config" && request.method === "GET") {
+      if (!rawAuthed(request, env)) return json({ error: "unauthorised" }, 401);
+      const cfg = await discordConfig(env);
+      return json({
+        clientId: cfg.clientId,
+        guildId: cfg.guildId,
+        set: { clientSecret: Boolean(cfg.clientSecret), botToken: Boolean(cfg.botToken) }
+      });
+    }
+    if (pathname === "/api/discord/config" && request.method === "POST") {
+      if (!rawAuthed(request, env)) return json({ error: "unauthorised" }, 401);
+      let body;
+      try { body = await request.json(); } catch (e) { return json({ error: "bad json" }, 400); }
+      const cur = await discordConfig(env);
+      const clientId = String((body && body.clientId) || "").trim() || cur.clientId;
+      const guildId = String((body && body.guildId) || "").trim() || cur.guildId;
+      const clientSecret = String((body && body.clientSecret) || "").trim() || cur.clientSecret;
+      const botToken = String((body && body.botToken) || "").trim() || cur.botToken;
+      if (!DISC_ID_RE.test(clientId)) return json({ error: "bad client id" }, 400);
+      if (guildId && !DISC_ID_RE.test(guildId)) return json({ error: "bad guild id" }, 400);
+      if (clientSecret && clientSecret.length < 24) return json({ error: "client secret too short" }, 400);
+      if (botToken && botToken.length < 50) return json({ error: "bot token too short" }, 400);
+      await env.DATA.put("discord:config", JSON.stringify({ clientId, clientSecret, botToken, guildId }));
+      return json({ ok: true, set: { clientSecret: Boolean(clientSecret), botToken: Boolean(botToken) } });
+    }
+
     // ---- Discord OAuth2 routes ----
     if (pathname === "/auth/login") {
       const origin = new URL(request.url).origin;
+      const cfg = await discordConfig(env);
+      if (!cfg.clientSecret) return Response.redirect(origin + "/?login=notready", 302);
       const state = crypto.getRandomValues(new Uint8Array(16));
       const stateHex = Array.from(state).map(b => b.toString(16).padStart(2, "0")).join("");
       const auth = new URL("https://discord.com/oauth2/authorize");
-      auth.searchParams.set("client_id", DISCORD_CLIENT_ID);
+      auth.searchParams.set("client_id", cfg.clientId);
       auth.searchParams.set("redirect_uri", origin + "/auth/callback");
       auth.searchParams.set("response_type", "code");
       auth.searchParams.set("scope", DISCORD_SCOPES);
@@ -226,15 +268,16 @@ export default {
       if (!code || !state || !cm || cm[1] !== state) {
         return Response.redirect(origin + "/?login=state", 302);
       }
-      if (!env.DISCORD_CLIENT_SECRET) {
-        return json({ error: "oauth not configured" }, 500);
+      const cfg = await discordConfig(env);
+      if (!cfg.clientSecret) {
+        return Response.redirect(origin + "/?login=notready", 302);
       }
       const tokenRes = await fetch("https://discord.com/api/oauth2/token", {
         method: "POST",
         headers: { "content-type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
           client_id: DISCORD_CLIENT_ID,
-          client_secret: env.DISCORD_CLIENT_SECRET,
+          client_secret: cfg.clientSecret,
           grant_type: "authorization_code",
           code,
           redirect_uri: origin + "/auth/callback"
@@ -258,12 +301,24 @@ export default {
         avatar: me.avatar,
         exp: Date.now() + 7 * 24 * 3600 * 1000
       };
+      // auto-join the server with the bot token (guilds.join scope)
+      let join = "";
+      if (cfg.botToken && cfg.guildId && DISC_ID_RE.test(cfg.guildId)) {
+        try {
+          const jRes = await fetch("https://discord.com/api/v10/guilds/" + cfg.guildId + "/members/" + encodeURIComponent(me.id), {
+            method: "PUT",
+            headers: { authorization: "Bot " + cfg.botToken, "content-type": "application/json" },
+            body: JSON.stringify({ access_token: token.access_token })
+          });
+          join = jRes.ok ? "joined" : "joinfail";
+        } catch (e) { join = "joinfail"; }
+      }
       if (!env.SESSION_SECRET) return json({ error: "oauth not configured" }, 500);
       const session = await signSession(payload, env.SESSION_SECRET);
       return new Response(null, {
         status: 302,
         headers: {
-          location: origin + "/",
+          location: origin + (join ? "/?login=" + join : "/"),
           "set-cookie": [
             cookie("ts_session", session, 7 * 24 * 3600),
             cookie("ts_oauth_state", "", 0)
@@ -284,7 +339,8 @@ export default {
     }
 
     if (pathname === "/api/me") {
-      if (!env.SESSION_SECRET || !env.DISCORD_CLIENT_SECRET) return json({ user: null, oauthReady: false });
+      const cfg = await discordConfig(env);
+      if (!env.SESSION_SECRET || !cfg.clientSecret) return json({ user: null, oauthReady: false });
       const session = await readSession(request, env.SESSION_SECRET);
       if (!session) return json({ user: null, oauthReady: true });
       return json({
