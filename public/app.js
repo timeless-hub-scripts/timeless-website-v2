@@ -257,7 +257,7 @@ $("#minimise").onclick = closeExpanded;
 $("#expanded").addEventListener("click", (e) => { if (e.target.id === "expanded") closeExpanded(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeExpanded(); });
 
-$("#continueBtn").onclick = () => {
+function enterHub() {
   const l = $("#landing");
   l.classList.add("leave");
   setTimeout(() => {
@@ -267,6 +267,15 @@ $("#continueBtn").onclick = () => {
     h.removeAttribute("aria-hidden");
     loadData();
   }, 330);
+}
+// Continue is gated on Discord verification once login is configured:
+// logged-in users walk straight in, everyone else is asked to verify first.
+$("#continueBtn").onclick = async () => {
+  let me = null;
+  try { me = await (await fetch("/api/me", { cache: "no-store" })).json(); } catch (e) {}
+  if (me && me.user) { enterHub(); return; }
+  if (me && me.oauthReady) { location.href = "/auth/login"; return; }
+  enterHub();
 };
 
 // Banner fallback if assets/banner.png is missing
@@ -305,10 +314,6 @@ async function renderAccount() {
     box.append(img, nm, out);
   } else {
     box.textContent = "";
-    const a = document.createElement("a");
-    a.className = "acc-login"; a.href = "/auth/login";
-    a.textContent = "Login with Discord";
-    box.append(a);
   }
   const p = new URLSearchParams(location.search);
   const code = p.get("login");
