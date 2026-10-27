@@ -292,7 +292,7 @@ if (ON_MAIN) {
 $("#continueBtn").onclick = async () => {
   let me = null;
   try { me = await (await fetch("/api/me", { cache: "no-store" })).json(); } catch (e) {}
-  if (me && me.user) { enterHub(); return; }
+  if (me && me.user) { location.href = "/main"; return; }
   if (me && me.oauthReady) { location.href = "/auth/login"; return; }
   enterHub();
 };
