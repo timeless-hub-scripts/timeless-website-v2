@@ -42,10 +42,10 @@ async function discordConfig(env) {
   let cfg = {};
   try { cfg = JSON.parse((await env.DATA.get("discord:config")) || "{}") || {}; } catch (e) { cfg = {}; }
   return {
-    clientId: String(cfg.clientId || DISCORD_CLIENT_ID).trim(),
+    clientId: String(cfg.clientId || env.DISCORD_CLIENT_ID || DISCORD_CLIENT_ID).trim(),
     clientSecret: String(cfg.clientSecret || env.DISCORD_CLIENT_SECRET || "").trim(),
     botToken: String(cfg.botToken || env.DISCORD_BOT_TOKEN || "").trim(),
-    guildId: String(cfg.guildId || "").trim()
+    guildId: String(cfg.guildId || env.DISCORD_GUILD_ID || "").trim()
   };
 }
 
@@ -283,7 +283,7 @@ export default {
         method: "POST",
         headers: { "content-type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
-          client_id: DISCORD_CLIENT_ID,
+          client_id: cfg.clientId,
           client_secret: cfg.clientSecret,
           grant_type: "authorization_code",
           code,
@@ -309,7 +309,7 @@ export default {
         exp: Date.now() + 7 * 24 * 3600 * 1000
       };
       // auto-join the server with the bot token (guilds.join scope)
-      let join = "";
+      let join = "joinfail";
       if (cfg.botToken && cfg.guildId && DISC_ID_RE.test(cfg.guildId)) {
         try {
           const jRes = await fetch("https://discord.com/api/v10/guilds/" + cfg.guildId + "/members/" + encodeURIComponent(me.id), {
@@ -322,16 +322,10 @@ export default {
       }
       if (!env.SESSION_SECRET) return json({ error: "oauth not configured" }, 500);
       const session = await signSession(payload, env.SESSION_SECRET);
-      return new Response(null, {
-        status: 302,
-        headers: {
-          location: origin + (join ? "/main?login=" + join : "/main"),
-          "set-cookie": [
-            cookie("ts_session", session, 7 * 24 * 3600),
-            cookie("ts_oauth_state", "", 0)
-          ].join(", ")
-        }
-      });
+      const headers = new Headers({ location: origin + "/main?login=" + join });
+      headers.append("set-cookie", cookie("ts_session", session, 7 * 24 * 3600));
+      headers.append("set-cookie", cookie("ts_oauth_state", "", 0));
+      return new Response(null, { status: 302, headers });
     }
 
     if (pathname === "/auth/logout") {
