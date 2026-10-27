@@ -239,7 +239,7 @@ export default {
     // ---- /main: the logged-in scripts page ----
     if (pathname === "/main") {
       const url = new URL(request.url);
-      const asset = await env.ASSETS.fetch(new Request(url.origin + "/index.html", { headers: request.headers }));
+      const asset = await env.ASSETS.fetch(new Request(url.origin + "/main.html", { headers: request.headers }));
       return new Response(asset.body, asset);
     }
 

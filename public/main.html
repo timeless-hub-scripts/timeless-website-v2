@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TIMELESS SCRIPTS</title>
+<meta name="description" content="Timeless Scripts — free roblox exploits">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=6">
+</head>
+<body>
+<div id="bg-glow"></div>
+
+<!-- LANDING -->
+<div id="landing" class="hidden" aria-hidden="true"></div>
+
+<!-- HUB -->
+<main id="hub" class="hidden" aria-hidden="true">
+  <header class="hub-hero">
+    <div class="banner-wrap">
+      <img id="banner" src="assets/banner.png" alt="Timeless banner">
+      <div id="bannerFallback" class="banner-fallback hidden"><span>TIMELESS</span></div>
+    </div>
+    <h1 class="site-title">TIMELESS SCRIPTS</h1>
+    <div id="account" class="account"></div>
+  </header>
+
+  <nav id="tabs" class="tabs" aria-label="Game tabs"></nav>
+  <section id="scripts" class="grid" aria-label="Scripts"></section>
+  <p id="empty" class="empty hidden">no scripts here yet</p>
+</main>
+
+<!-- EXPANDED TILE -->
+<div id="expanded" class="overlay hidden" role="dialog" aria-modal="true">
+  <div class="expanded-tile">
+    <button id="minimise" class="icon-btn" aria-label="Minimise">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 14h6v6M20 10h-6V4M14 10l6-6M4 20l6-6"/></svg>
+      Minimise
+    </button>
+    <h2 id="xName"></h2>
+    <p id="xDesc"></p>
+    <div class="load-row"><code id="xLoad"></code><button id="xCopy" class="btn btn-sm">Copy</button></div>
+  </div>
+</div>
+
+<!-- Placeholder: Discord OAuth login lands here in v2.1 (stub prepared, not enabled yet) -->
+<script src="data.js?v=4"></script>
+<script src="app.js?v=7"></script>
+</body>
+</html>
