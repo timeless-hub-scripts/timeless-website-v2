@@ -236,6 +236,13 @@ export default {
       return json({ ok: true, set: { clientSecret: Boolean(clientSecret), botToken: Boolean(botToken) } });
     }
 
+    // ---- /main: the logged-in scripts page ----
+    if (pathname === "/main") {
+      const url = new URL(request.url);
+      const asset = await env.ASSETS.fetch(new Request(url.origin + "/index.html", { headers: request.headers }));
+      return new Response(asset.body, asset);
+    }
+
     // ---- Discord OAuth2 routes ----
     if (pathname === "/auth/login") {
       const origin = new URL(request.url).origin;
@@ -318,7 +325,7 @@ export default {
       return new Response(null, {
         status: 302,
         headers: {
-          location: origin + (join ? "/?login=" + join : "/"),
+          location: origin + (join ? "/main?login=" + join : "/main"),
           "set-cookie": [
             cookie("ts_session", session, 7 * 24 * 3600),
             cookie("ts_oauth_state", "", 0)

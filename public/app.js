@@ -1,4 +1,5 @@
 const $ = (s) => document.querySelector(s);
+const ON_MAIN = location.pathname === "/main";
 let DATA = window.TIMELESS_DATA || { tabs: [], scripts: [] };
 let activeTab = "ALL";
 
@@ -270,6 +271,24 @@ function enterHub() {
 }
 // Continue is gated on Discord verification once login is configured:
 // logged-in users walk straight in, everyone else is asked to verify first.
+// /main is the hub directly: verified users get it straight away,
+// anyone else is bounced back to the landing gate.
+if (ON_MAIN) {
+  $("#landing").classList.add("hidden");
+  (async () => {
+    let me = null;
+    try { me = await (await fetch("/api/me", { cache: "no-store" })).json(); } catch (e) {}
+    if (me && me.user) {
+      const h = $("#hub");
+      h.classList.remove("hidden");
+      h.removeAttribute("aria-hidden");
+      loadData();
+    } else {
+      location.replace("/");
+    }
+  })();
+}
+
 $("#continueBtn").onclick = async () => {
   let me = null;
   try { me = await (await fetch("/api/me", { cache: "no-store" })).json(); } catch (e) {}
