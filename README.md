@@ -26,12 +26,6 @@ and an owner console at `/cyr0x`.
    owner password for `/cyr0x`.
 4. Redeploy. Publishing from `/cyr0x` then writes straight to KV.
 
-## Discord OAuth (planned, not wired yet)
-The hub is structured so a Discord OAuth login can drop in without reworking
-it: data stays in KV, and the console gate (`x-admin-password` header) is
-independent of site visitors. A stub comment marks the header slot in
-`index.html` where the login button will mount.
-
 ## Using npx wrangler
 
 `wrangler.jsonc` is the Pages config for this site: project name
