@@ -75,6 +75,7 @@ const rawAuthed = (request, env) => {
   const pw = request.headers.get("x-admin-password") || "";
   return Boolean(env.ADMIN_PASSWORD) && pw === env.ADMIN_PASSWORD;
 };
+const rawConfigError = (env) => !env.ADMIN_PASSWORD ? json({ error: "admin password not configured" }, 503) : null;
 async function rawGet(env, name) {
   const v = await env.DATA.get("raw:" + name);
   if (!v) return null;
@@ -131,7 +132,7 @@ export default {
 
     if (pathname === "/api/verify") {
       const pw = request.headers.get("x-admin-password") || "";
-      if (!env.ADMIN_PASSWORD) return json({ ok: false, configured: false });
+      if (!env.ADMIN_PASSWORD) return json({ ok: false, configured: false }, 503);
       return json({ ok: pw === env.ADMIN_PASSWORD, configured: true });
     }
 
@@ -154,6 +155,8 @@ export default {
     }
 
     if (pathname === "/api/raw/get" && request.method === "GET") {
+      const configError = rawConfigError(env);
+      if (configError) return configError;
       if (!rawAuthed(request, env)) return json({ error: "unauthorized" }, 401);
       const name = new URL(request.url).searchParams.get("name") || "";
       if (!RAW_NAME_RE.test(name)) return json({ error: "bad name" }, 400);
@@ -164,6 +167,8 @@ export default {
     }
 
     if (pathname === "/api/raw/list" && request.method === "GET") {
+      const configError = rawConfigError(env);
+      if (configError) return configError;
       if (!rawAuthed(request, env)) return json({ error: "unauthorized" }, 401);
       if (!env.DATA) return json({ error: "kv not configured" }, 500);
       const pastes = [];
@@ -184,6 +189,8 @@ export default {
     }
 
     if (pathname === "/api/raw/save" && request.method === "POST") {
+      const configError = rawConfigError(env);
+      if (configError) return configError;
       if (!rawAuthed(request, env)) return json({ error: "unauthorized" }, 401);
       if (!env.DATA) return json({ error: "kv not configured" }, 500);
       let body;
@@ -198,6 +205,8 @@ export default {
     }
 
     if (pathname === "/api/raw/delete" && request.method === "POST") {
+      const configError = rawConfigError(env);
+      if (configError) return configError;
       if (!rawAuthed(request, env)) return json({ error: "unauthorized" }, 401);
       if (!env.DATA) return json({ error: "kv not configured" }, 500);
       let body;

@@ -14,6 +14,14 @@ function status(el, msg, ok) {
 }
 const authHeaders = (extra) => Object.assign({ "x-admin-password": PW, cache: "no-store" }, extra || {});
 
+function lock(message) {
+  PW = "";
+  sessionStorage.removeItem("raw_pw");
+  $("#console").classList.add("hidden");
+  $("#gate").classList.remove("hidden");
+  $("#unlockErr").textContent = message || "session expired; unlock again";
+}
+
 function renderPastes() {
   const box = $("#pasteList");
   if (!PASTES.length) {
@@ -72,7 +80,9 @@ function renderPastes() {
 
 async function loadList() {
   const r = await fetch("/api/raw/list", { headers: authHeaders() });
-  if (!r.ok) return;
+  if (r.status === 401) { lock("session expired or password rejected"); return; }
+  if (r.status === 503) { status($("#pasteStatus"), "admin password is not configured on the server", false); return; }
+  if (!r.ok) { status($("#pasteStatus"), "could not load pastes", false); return; }
   const j = await r.json();
   // server wins, but keep pastes saved this session the server has not listed yet
   const server = j.pastes || [];
@@ -90,9 +100,11 @@ async function unlock() {
   $("#unlockErr").textContent = "";
   try {
     const r = await fetch("/api/verify", { headers: { "x-admin-password": pw }, cache: "no-store" });
+    if (r.status === 503) { $("#unlockErr").textContent = "admin password is not configured on the server"; return; }
     if (!r.ok) { $("#unlockErr").textContent = "wrong password"; return; }
     const j = await r.json();
-    if (j && j.configured && !j.ok) { $("#unlockErr").textContent = "wrong password"; return; }
+    if (!j || !j.configured) { $("#unlockErr").textContent = "admin password is not configured on the server"; return; }
+    if (!j.ok) { $("#unlockErr").textContent = "wrong password"; return; }
   } catch (e) { $("#unlockErr").textContent = "could not reach server"; return; }
   PW = pw;
   sessionStorage.setItem("raw_pw", pw);
@@ -115,6 +127,8 @@ $("#pasteForm").addEventListener("submit", async (e) => {
     body: JSON.stringify({ name, numbers, content })
   });
   const j = await r.json().catch(() => ({}));
+  if (r.status === 401) { lock("session expired or password rejected"); return; }
+  if (r.status === 503) { status($("#pasteStatus"), "admin password is not configured on the server", false); return; }
   if (!r.ok) { status($("#pasteStatus"), j.error || "save failed", false); $("#pasteLinks").textContent = ""; return; }
   const base = location.origin + j.url;
   $("#pasteLinks").textContent = base + (j.numberedUrl ? "  |  " + location.origin + j.numberedUrl : "");
